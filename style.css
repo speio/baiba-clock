@@ -85,8 +85,9 @@ html, body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding: 36px 24px 24px 24px;
+  justify-content: center;
+  gap: 24px;
+  padding: 36px 24px 48px 24px;
 }
 
 /* Header */
@@ -640,24 +641,6 @@ html, body {
   display: flex;
   justify-content: flex-end;
   margin-top: 8px;
-}
-
-/* Subdued Footer */
-.app-footer {
-  margin-top: 36px;
-  padding: 16px 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 12px;
-  font-size: 0.65rem;
-  color: var(--text-silver-muted);
-  letter-spacing: 0.08em;
-  opacity: 0.7;
-}
-
-.bullet {
-  color: var(--text-silver-dark);
 }
 
 /* Responsive Breakpoints */
