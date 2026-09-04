@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Baiba Clock — Our Time</title>
+  <meta name="description" content="A precision time dilation clock exploring the subjective perception of relationship time anchored to August 26, 2026.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Ambient Surreal Canvas: Abstract Rural Soviet Farm Flecks & Looping Animals -->
+  <canvas id="farmCanvas"></canvas>
+
+  <!-- Main User Interface -->
+  <main class="app-container">
+    <!-- Top Minimalist Brand & Status -->
+    <header class="top-header">
+      <div class="header-left">
+        <span class="meta-value">AUG 26, 2026 // ORIGIN</span>
+      </div>
+      <div class="header-center">
+        <h1 id="clockTitle" class="title-header">REAL TIME</h1>
+        <div id="dilationStatus" class="dilation-subtitle">1.0000× — Objective Reality</div>
+      </div>
+      <div class="header-right">
+        <span class="meta-label">PRECISION</span>
+        <span class="meta-value">1 µs (10⁻⁶ s)</span>
+      </div>
+    </header>
+
+    <!-- Central Hero Clock Section -->
+    <section class="clock-display-card">
+      <div class="glass-reflection"></div>
+      
+      <!-- Primary Display: Chronological Breakdown -->
+      <div id="chronoView" class="clock-view active">
+        <div class="unit-group" id="unitYears">
+          <div class="digit-value" id="valYears">00</div>
+          <div class="unit-label">YEARS</div>
+        </div>
+        <span class="unit-separator">:</span>
+
+        <div class="unit-group" id="unitDays">
+          <div class="digit-value" id="valDays">009</div>
+          <div class="unit-label">DAYS</div>
+        </div>
+        <span class="unit-separator">:</span>
+
+        <div class="unit-group" id="unitHours">
+          <div class="digit-value" id="valHours">00</div>
+          <div class="unit-label">HOURS</div>
+        </div>
+        <span class="unit-separator">:</span>
+
+        <div class="unit-group" id="unitMinutes">
+          <div class="digit-value" id="valMinutes">00</div>
+          <div class="unit-label">MINUTES</div>
+        </div>
+        <span class="unit-separator">:</span>
+
+        <div class="unit-group" id="unitSeconds">
+          <div class="digit-value" id="valSeconds">00</div>
+          <div class="unit-label">SECONDS</div>
+        </div>
+        <span class="unit-separator">.</span>
+
+        <div class="unit-group sub-second" id="unitMillis">
+          <div class="digit-value" id="valMillis">000</div>
+          <div class="unit-label">MS (10⁻³)</div>
+        </div>
+        <span class="unit-separator sub">.</span>
+
+        <div class="unit-group sub-second" id="unitMicros">
+          <div class="digit-value" id="valMicros">000</div>
+          <div class="unit-label">µS (10⁻⁶)</div>
+        </div>
+      </div>
+
+      <!-- Secondary Display: Base-10 Decadic Bins (Powers of 10 Microseconds) -->
+      <div id="binsView" class="clock-view bins-view hidden">
+        <div class="bins-header">TOTAL ELAPSED DECIMAL BINS (BASE-10 µS)</div>
+        <div class="bins-grid" id="binsGrid">
+          <!-- Populated dynamically via JS: 10^0 to 10^13 -->
+        </div>
+      </div>
+
+      <!-- Total Scientific Counter Readout -->
+      <div class="scientific-ticker-row">
+        <div class="ticker-col">
+          <span class="sub-label">TOTAL ACCUMULATED µS</span>
+          <span class="sub-mono" id="totalMicrosDisplay">0</span>
+        </div>
+        <div class="ticker-divider"></div>
+        <div class="ticker-col">
+          <span class="sub-label">EQUIVALENT CALENDAR TIME</span>
+          <span class="sub-mono" id="equivalentDateDisplay">Calculating...</span>
+        </div>
+        <div class="ticker-divider"></div>
+        <div class="ticker-col">
+          <span class="sub-label">SURREAL DRIFT VELOCITY</span>
+          <span class="sub-mono" id="animalSpeedDisplay">1.00×</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slider & Control Interface -->
+    <section class="controls-card">
+      <div class="slider-header-row">
+        <div class="slider-title-col">
+          <label for="distortionSlider" class="control-title">REALITY DILATION SPECTRUM</label>
+          <span class="control-hint">Non-linear power law: 7d → 1yr | 9d → 20yr</span>
+        </div>
+        <div class="slider-value-badge" id="sliderValueBadge">0.00 (Real Time)</div>
+      </div>
+
+      <!-- Main Slider -->
+      <div class="slider-track-container">
+        <div class="slider-ticks">
+          <span class="tick-mark left">0% Real Time</span>
+          <span class="tick-mark mid">1 Week = 1 Year (Anchor I)</span>
+          <span class="tick-mark right">9 Days = 20 Years (Our Time)</span>
+        </div>
+        <input 
+          type="range" 
+          id="distortionSlider" 
+          min="0" 
+          max="1" 
+          step="0.001" 
+          value="0" 
+          class="custom-slider"
+          aria-label="Reality Dilation Slider"
+        >
+        <div class="slider-progress" id="sliderProgress"></div>
+      </div>
+
+      <!-- Quick Preset Buttons -->
+      <div class="presets-row">
+        <button class="btn-preset active" id="btnPresetReal" data-val="0">Objective Reality (1.0×)</button>
+        <button class="btn-preset" id="btnPresetWeek" data-val="0.5">Week Dilation (52.2×)</button>
+        <button class="btn-preset" id="btnPresetOur" data-val="1.0">Our Time (811.7×)</button>
+      </div>
+
+      <!-- Bottom Settings & Actions -->
+      <div class="actions-row">
+        <div class="actions-left">
+          <button class="btn-action" id="btnToggleView" title="Toggle between standard units and Base-10 bins">
+            <span class="btn-icon">❖</span> Toggle Base-10 Bins
+          </button>
+          <button class="btn-action" id="btnPauseResume" title="Freeze or resume live ticking">
+            <span class="btn-icon">⏸</span> Pause
+          </button>
+          <button class="btn-action" id="btnTimeWarpModal" title="Simulate elapsed time">
+            <span class="btn-icon">⏱</span> Scrub / Warp Days
+          </button>
+        </div>
+        <div class="actions-right">
+          <span class="origin-tag">Origin: <strong>2026-08-26 00:00:00</strong></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive Time-Warp / Test Modal (For scrubbing to exactly 7d or 9d) -->
+    <div id="warpModal" class="modal-overlay hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>TIME-WARP ELAPSED SIMULATOR</h3>
+          <button class="modal-close" id="btnCloseWarp">✕</button>
+        </div>
+        <p class="modal-desc">
+          Test subjective perception at specific elapsed durations since origin:
+        </p>
+        <div class="warp-presets">
+          <button class="warp-chip" data-days="1">1 Day</button>
+          <button class="warp-chip" data-days="3">3 Days</button>
+          <button class="warp-chip" data-days="7">7 Days (1 Week)</button>
+          <button class="warp-chip" data-days="9">9 Days (Exact Anchor)</button>
+          <button class="warp-chip" data-days="14">14 Days (2 Weeks)</button>
+          <button class="warp-chip" data-days="30">30 Days (1 Month)</button>
+        </div>
+        <div class="warp-slider-wrap">
+          <label for="warpDaysSlider">Custom Elapsed Days: <strong id="warpDaysVal">9.46</strong> days</label>
+          <input type="range" id="warpDaysSlider" min="0.01" max="30" step="0.01" value="9.46" class="custom-slider">
+        </div>
+        <div class="modal-actions">
+          <button class="btn-action" id="btnResetToLive">Reset to Live Time (Aug 26 → Now)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Subdued Footer -->
+    <footer class="app-footer">
+      <span>Baiba Clock — Relativistic Relationship Chronometer</span>
+      <span class="bullet">•</span>
+      <span>Soviet Rural Pasture Abstracted Canvas</span>
+      <span class="bullet">•</span>
+      <span>2 Goats, 3 Dogs (including 1 Golden), 4 Cats in Continuous Loop</span>
+      <span class="bullet">•</span>
+      <span>Seasonal Birch Trees & Meadow Flora (Growth Cycles with Time Dilation)</span>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
