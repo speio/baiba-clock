@@ -53,7 +53,8 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-html, body {
+html {
+  scroll-behavior: smooth;
   width: 100%;
   min-height: 100%;
   background-color: var(--bg-pure-black);
@@ -65,7 +66,14 @@ html, body {
   letter-spacing: 0.02em;
 }
 
-/* Background Canvas Layer */
+body {
+  width: 100%;
+  min-height: 100%;
+  background-color: transparent;
+  overflow-x: hidden;
+}
+
+/* Background Canvas Layers */
 #farmCanvas {
   position: fixed;
   top: 0;
@@ -74,6 +82,19 @@ html, body {
   height: 100vh;
   z-index: 1;
   pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+#trainCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
 }
 
 /* Main Layout Container */
@@ -85,9 +106,71 @@ html, body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  gap: 40px;
+  padding: 20px 24px 64px 24px;
+}
+
+.page-section {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
   gap: 24px;
-  padding: 36px 24px 48px 24px;
+  position: relative;
+  padding: 24px 0;
+}
+
+/* Scroll Prompts Between Sections */
+.scroll-prompt-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.scroll-prompt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 24px;
+  background: var(--btn-blue-bg);
+  border: 1px solid var(--btn-blue-border);
+  color: var(--text-silver-bright);
+  border-radius: 30px;
+  text-decoration: none;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: var(--font-normal);
+  transition: var(--transition-smooth);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.scroll-prompt-btn:hover {
+  background: var(--btn-blue-bg-hover);
+  border-color: var(--btn-blue-border-hover);
+  color: #ffffff;
+  transform: translateY(2px);
+  box-shadow: 0 10px 28px var(--btn-blue-glow);
+}
+
+.return-btn:hover {
+  transform: translateY(-2px);
+}
+
+.prompt-arrow {
+  font-size: 0.95rem;
+  color: rgba(186, 230, 253, 0.95);
+  transition: transform 0.25s ease;
+}
+
+.scroll-prompt-btn:hover .prompt-arrow {
+  transform: translateY(3px);
+}
+
+.return-btn:hover .prompt-arrow {
+  transform: translateY(-3px);
 }
 
 /* Header */
@@ -643,9 +726,152 @@ html, body {
   margin-top: 8px;
 }
 
+/* ==========================================================================
+   Countdown & Alpine Railway Section
+   ========================================================================== */
+.countdown-header {
+  border-color: rgba(56, 189, 248, 0.18);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(56, 189, 248, 0.05);
+}
+
+.countdown-title {
+  letter-spacing: 0.20em;
+}
+
+.waypoint-badge {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.waypoint-badge.align-right {
+  flex-direction: row-reverse;
+}
+
+.waypoint-svg {
+  color: var(--text-pure-white);
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.25));
+  flex-shrink: 0;
+}
+
+.waypoint-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.waypoint-meta.text-right {
+  align-items: flex-end;
+}
+
+/* Ticket Strip */
+.ticket-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  margin-bottom: 24px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--border-radius-sm);
+}
+
+.ticket-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ticket-tag {
+  font-size: 0.60rem;
+  letter-spacing: 0.16em;
+  color: #f87171; /* ÖBB crimson accent */
+  font-weight: var(--font-medium);
+}
+
+.ticket-num {
+  font-size: 0.72rem;
+  color: var(--text-silver-mid);
+  letter-spacing: 0.05em;
+}
+
+.ticket-route {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.88rem;
+  color: var(--text-pure-white);
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
+}
+
+.route-track-dots {
+  color: var(--text-silver-muted);
+  letter-spacing: 0.16em;
+  font-size: 0.68rem;
+}
+
+.route-symbol {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ticket-passenger {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.passenger-label {
+  font-size: 0.58rem;
+  color: var(--text-silver-muted);
+  letter-spacing: 0.14em;
+}
+
+.passenger-name {
+  font-size: 0.76rem;
+  color: var(--text-pure-white);
+  letter-spacing: 0.08em;
+  font-weight: var(--font-normal);
+}
+
+/* Arrival Celebration Banner */
+.arrival-banner {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.arrival-banner.hidden {
+  display: none;
+}
+
+.arrival-sparkle {
+  color: #fbbf24;
+  font-size: 1.2rem;
+  letter-spacing: 0.35em;
+  margin-bottom: 6px;
+}
+
+.arrival-text {
+  font-size: 2.2rem;
+  color: #ffffff;
+  letter-spacing: 0.22em;
+  font-weight: var(--font-light);
+  text-shadow: 0 0 35px rgba(255, 255, 255, 0.7);
+}
+
+.arrival-sub {
+  font-size: 0.85rem;
+  color: var(--text-silver-bright);
+  margin-top: 6px;
+  letter-spacing: 0.12em;
+}
+
 /* Responsive Breakpoints */
 @media (max-width: 900px) {
-  #chronoView {
+  #chronoView, #countdownView {
     gap: 8px;
   }
   .digit-value {
@@ -675,10 +901,18 @@ html, body {
   .title-header {
     font-size: 1.4rem;
   }
-  #chronoView {
+  #chronoView, #countdownView {
     flex-wrap: wrap;
     justify-content: center;
     gap: 10px;
+  }
+  .ticket-strip {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+  .ticket-passenger {
+    align-items: center;
   }
   .digit-value {
     font-size: 2.2rem;

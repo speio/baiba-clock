@@ -3,23 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Baiba Clock — Our Time</title>
+  <title>Since we met — Our Time</title>
   <meta name="description" content="A precision time dilation clock exploring the subjective perception of relationship time anchored to August 26, 2026.">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Ambient Surreal Canvas: Abstract Rural Soviet Farm Flecks & Looping Animals -->
+  <!-- Ambient Background Canvases -->
   <canvas id="farmCanvas"></canvas>
+  <canvas id="trainCanvas"></canvas>
 
-  <!-- Main User Interface -->
+  <!-- Main User Interface (Two-Section Scrollable Journey) -->
   <main class="app-container">
+    <!-- Section 1: Since We Met (Aug 26, 2026 Origin) -->
+    <section id="sectionSinceWeMet" class="page-section">
     <!-- Top Minimalist Brand & Status -->
     <header class="top-header">
       <div class="header-left">
         <span class="meta-value">AUG 26, 2026 // ORIGIN</span>
       </div>
       <div class="header-center">
-        <h1 id="clockTitle" class="title-header">REAL TIME</h1>
+        <h1 id="clockTitle" class="title-header">SINCE WE MET</h1>
         <div id="dilationStatus" class="dilation-subtitle">1.0000× — Objective Reality</div>
       </div>
       <div class="header-right">
@@ -108,7 +111,7 @@
       <div class="slider-header-row">
         <div class="slider-title-col">
           <label for="distortionSlider" class="control-title">REALITY DILATION SPECTRUM</label>
-          <span class="control-hint">Subjective dilation: 1 Day = 1 Week | 1 Week = 1 Year</span>
+          <span class="control-hint">Subjective dilation: 1.0× Real Time → 7.0× Our Time (1 Day = 1 Week)</span>
         </div>
         <div class="slider-value-badge" id="sliderValueBadge">0% (1.0×)</div>
       </div>
@@ -117,8 +120,8 @@
       <div class="slider-track-container">
         <div class="slider-ticks">
           <span class="tick-mark left">Real Time (1.0×)</span>
-          <span class="tick-mark mid">1 Day = 1 Week (7.0×)</span>
-          <span class="tick-mark right">1 Week = 1 Year (Our Time, 52.2×)</span>
+          <span class="tick-mark mid">Perceptual Drift (2.6×)</span>
+          <span class="tick-mark right">Our Time (7.0×)</span>
         </div>
         <input 
           type="range" 
@@ -136,8 +139,8 @@
       <!-- Quick Preset Buttons -->
       <div class="presets-row">
         <button class="btn-preset active" id="btnPresetReal" data-val="0">Objective Reality (1.0×)</button>
-        <button class="btn-preset" id="btnPresetWeek" data-val="0.5">1 Day = 1 Week (7.0×)</button>
-        <button class="btn-preset" id="btnPresetOur" data-val="1.0">Our Time (52.2×)</button>
+        <button class="btn-preset" id="btnPresetWeek" data-val="0.5">Perceptual Drift (2.6×)</button>
+        <button class="btn-preset" id="btnPresetOur" data-val="1.0">Our Time (7.0×)</button>
       </div>
 
       <!-- Bottom Settings & Actions -->
@@ -158,6 +161,165 @@
         </div>
       </div>
     </section>
+
+    <!-- Scroll Prompt to Section 2 -->
+    <div class="scroll-prompt-row">
+      <a href="#sectionCountdown" class="scroll-prompt-btn">
+        <span class="prompt-arrow">↓</span>
+        <span class="prompt-text">COUNTDOWN TO ARRIVAL & ALPINE RAILWAY</span>
+        <span class="prompt-arrow">↓</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- Section 2: Countdown & Alpine Train Journey -->
+  <section id="sectionCountdown" class="page-section countdown-section">
+    <!-- Section Header with Gondolier & Alpine Peak Icons -->
+    <header class="top-header countdown-header">
+      <div class="header-left waypoint-origin">
+        <!-- Gondolier SVG Icon & Departure -->
+        <div class="waypoint-badge">
+          <svg class="waypoint-svg" viewBox="0 0 54 36" width="46" height="30" fill="none" stroke="currentColor">
+            <!-- Venetian Gondola profile with ferro (prow) -->
+            <path d="M 4 24 C 12 24, 16 26, 27 26 C 38 26, 43 21, 50 14 C 47 26, 36 30, 22 30 C 10 30, 4 27, 4 24 Z" fill="rgba(203,213,225,0.22)" stroke="rgba(226,232,240,0.85)" stroke-width="1.2"/>
+            <path d="M 50 14 L 52 7 L 48 8 L 50 14" stroke="rgba(248,250,252,0.95)" stroke-width="1.2" stroke-linejoin="round"/>
+            <!-- Gondolier standing with oar -->
+            <circle cx="18" cy="10.5" r="2.8" fill="rgba(248,250,252,0.95)"/>
+            <path d="M 18 13.3 L 17.5 21 L 20 25" stroke="rgba(248,250,252,0.95)" stroke-width="1.4" stroke-linecap="round"/>
+            <path d="M 13 18 L 24 13.5" stroke="rgba(248,250,252,0.95)" stroke-width="1.4" stroke-linecap="round"/>
+            <path d="M 12 19 L 6 32" stroke="rgba(186,230,253,0.85)" stroke-width="1.3" stroke-linecap="round"/>
+            <!-- Lagoon Water Ripples -->
+            <path d="M 2 32 C 6 31, 9 33, 14 32 C 19 31, 23 33, 28 32 C 33 31, 37 33, 42 32" stroke="rgba(56,189,248,0.5)" stroke-width="1.1" stroke-linecap="round"/>
+          </svg>
+          <div class="waypoint-meta">
+            <span class="meta-label">DEPARTURE</span>
+            <span class="meta-value">15:47 // SEP 11</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <h2 class="title-header countdown-title">UNTIL ARRIVAL</h2>
+        <div id="countdownStatus" class="dilation-subtitle">Reverse Time Dilation Active</div>
+      </div>
+
+      <div class="header-right waypoint-destination">
+        <!-- Alpine Mountain Peaks SVG Icon & Arrival -->
+        <div class="waypoint-badge align-right">
+          <div class="waypoint-meta text-right">
+            <span class="meta-label">DESTINATION</span>
+            <span class="meta-value">20:36 // SEP 11</span>
+          </div>
+          <svg class="waypoint-svg" viewBox="0 0 54 36" width="46" height="30" fill="none" stroke="currentColor">
+            <!-- Left Peak -->
+            <polygon points="6,31 18,13 30,31" fill="rgba(203,213,225,0.15)" stroke="rgba(203,213,225,0.7)" stroke-width="1.2"/>
+            <polygon points="18,13 15,18 19,18" fill="rgba(255,255,255,0.9)" stroke="none"/>
+            <!-- High Central Alpine Peak -->
+            <polygon points="20,31 35,7 48,31" fill="rgba(203,213,225,0.25)" stroke="rgba(248,250,252,0.95)" stroke-width="1.4"/>
+            <polygon points="35,7 29,15 35,14 41,16" fill="rgba(255,255,255,0.98)" stroke="none"/>
+            <!-- Small front foothill -->
+            <polygon points="29,31 40,19 49,31" fill="rgba(148,163,184,0.2)" stroke="rgba(148,163,184,0.6)" stroke-width="1"/>
+            <!-- Alpine Star -->
+            <circle cx="43" cy="8" r="1.6" fill="rgba(251,191,36,0.9)"/>
+          </svg>
+        </div>
+      </div>
+    </header>
+
+    <!-- Countdown Hero Display Card -->
+    <section class="clock-display-card countdown-card">
+      <div class="glass-reflection"></div>
+
+      <!-- Ticket Metadata Strip (Symbolic Visual Journey) -->
+      <div class="ticket-strip">
+        <div class="ticket-chip">
+          <span class="ticket-tag">ÖBB FAHRSCHEIN</span>
+          <span class="ticket-num">CIV 1181 // HF 11.09.26</span>
+        </div>
+        <div class="ticket-route">
+          <span class="route-symbol" title="Lagoon departure">⛵ 15:47</span>
+          <span class="route-track-dots">➔ ➔ ➔</span>
+          <span class="route-symbol" title="Alpine arrival">20:36 🏔</span>
+        </div>
+        <div class="ticket-passenger">
+          <span class="passenger-label">PASSENGER</span>
+          <span class="passenger-name">DEKENA BAIBA</span>
+        </div>
+      </div>
+
+      <!-- Reverse Dilated Countdown Breakdown -->
+      <div id="countdownView" class="clock-view active">
+        <div class="unit-group" id="countDaysGroup">
+          <div class="digit-value" id="countDays">003</div>
+          <div class="unit-label">DAYS REMAINING</div>
+        </div>
+        <span class="unit-separator">:</span>
+
+        <div class="unit-group" id="countHoursGroup">
+          <div class="digit-value" id="countHours">21</div>
+          <div class="unit-label">HOURS</div>
+        </div>
+        <span class="unit-separator">:</span>
+
+        <div class="unit-group" id="countMinutesGroup">
+          <div class="digit-value" id="countMinutes">48</div>
+          <div class="unit-label">MINUTES</div>
+        </div>
+        <span class="unit-separator">:</span>
+
+        <div class="unit-group" id="countSecondsGroup">
+          <div class="digit-value" id="countSeconds">12</div>
+          <div class="unit-label">SECONDS</div>
+        </div>
+        <span class="unit-separator">.</span>
+
+        <div class="unit-group sub-second" id="countMillisGroup">
+          <div class="digit-value" id="countMillis">000</div>
+          <div class="unit-label">MS (10⁻³)</div>
+        </div>
+        <span class="unit-separator sub">.</span>
+
+        <div class="unit-group sub-second" id="countMicrosGroup">
+          <div class="digit-value" id="countMicros">000</div>
+          <div class="unit-label">µS (10⁻⁶)</div>
+        </div>
+      </div>
+
+      <!-- Arrival Celebration Banner (Revealed when arrival time reached) -->
+      <div id="arrivalBanner" class="arrival-banner hidden">
+        <div class="arrival-sparkle">✦ ✦ ✦</div>
+        <h3 class="arrival-text">SHE HAS ARRIVED</h3>
+        <div class="arrival-sub">Destination Reached at the Alpine Peaks</div>
+      </div>
+
+      <!-- Train Track Status Readout -->
+      <div class="scientific-ticker-row train-ticker-row">
+        <div class="ticker-col">
+          <span class="sub-label">REAL-TIME REMAINING</span>
+          <span class="sub-mono" id="realRemainingDisplay">Calculating...</span>
+        </div>
+        <div class="ticker-divider"></div>
+        <div class="ticker-col">
+          <span class="sub-label">WINDING TRACK PROGRESS</span>
+          <span class="sub-mono" id="trainProgressDisplay">0.0%</span>
+        </div>
+        <div class="ticker-divider"></div>
+        <div class="ticker-col">
+          <span class="sub-label">SUBJECTIVE TIME UNTIL ARRIVAL</span>
+          <span class="sub-mono" id="subjectiveRemainingDisplay">Calculating...</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Scroll Back to Section 1 -->
+    <div class="scroll-prompt-row back-to-top-row">
+      <a href="#sectionSinceWeMet" class="scroll-prompt-btn return-btn">
+        <span class="prompt-arrow">↑</span>
+        <span class="prompt-text">RETURN TO "SINCE WE MET"</span>
+        <span class="prompt-arrow">↑</span>
+      </a>
+    </div>
+  </section>
 
     <!-- Interactive Time-Warp / Test Modal (For scrubbing to exactly 7d or 9d) -->
     <div id="warpModal" class="modal-overlay hidden">

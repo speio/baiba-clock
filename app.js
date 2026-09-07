@@ -1,14 +1,14 @@
 /**
- * Baiba Clock — "Our Time" Dilation Engine
+ * Baiba Clock — "Since We Met" / "Our Time" Dilation Engine
  * Relativistic Relationship Chronometer anchored to August 26, 2026.
  * 
  * Math:
  * - Origin: August 26, 2026 00:00:00 Local
  * - Dilation Anchors:
  *     Objective Reality => 1.0x (1 real day = 1 day)
- *     Day into Week     => 7.0x (1 real day = 1 subjective week)
- *     Our Time          => ~52.18x (1 real week = 1 subjective year)
- * - Power-law slider blending between Objective Reality, Week, and "Our Time".
+ *     Perceptual Drift  => ~2.65x
+ *     Our Time          => 7.0x (1 real day = 1 subjective week)
+ * - Power-law slider blending between Objective Reality and 7.0x "Our Time".
  * - Surreal animated canvas with abstract Soviet farm flecks, goats, 2 dogs, 4 cats, and seasonal trees.
  */
 
@@ -17,14 +17,17 @@
 
   // --- Constants & Config ---
   const ORIGIN_DATE = new Date(2026, 7, 26, 0, 0, 0); // Month 7 is August (0-indexed)
+  // Target arrival: September 11, 2026 at 20:36:00 Local Time
+  const ARRIVAL_DATE = new Date(2026, 8, 11, 20, 36, 0); // Month 8 is September
+  const DEPARTURE_DATE = new Date(2026, 8, 11, 15, 47, 0);
   const SECONDS_PER_DAY = 86400;
   const DAYS_PER_YEAR = 365.2425;
   const SECONDS_PER_YEAR = DAYS_PER_YEAR * SECONDS_PER_DAY; // ~31,556,952 s
 
   // Anchor Ratios
   const RATIO_REAL = 1.0;
-  const RATIO_MID = 7.0; // 1 real day = 1 subjective week (7.0x)
-  const RATIO_OUR_TIME = DAYS_PER_YEAR / 7; // ~52.1775 (1 real week = 1 subjective year)
+  const RATIO_MID = Math.sqrt(7.0); // ~2.64575 (Perceptual Drift)
+  const RATIO_MAX = 7.0; // Our Time: 1 real day = 1 subjective week (7.0x speed)
 
   // State
   const state = {
@@ -38,7 +41,7 @@
     lastFramePerf: performance.now(),
   };
 
-  // DOM Elements
+  // Section 1 DOM Elements ("Since We Met")
   const clockTitle = document.getElementById('clockTitle');
   const dilationStatus = document.getElementById('dilationStatus');
   const slider = document.getElementById('distortionSlider');
@@ -48,7 +51,7 @@
   const equivalentDateDisplay = document.getElementById('equivalentDateDisplay');
   const animalSpeedDisplay = document.getElementById('animalSpeedDisplay');
 
-  // Digit Elements
+  // Digit Elements (Clock 1)
   const valYears = document.getElementById('valYears');
   const valDays = document.getElementById('valDays');
   const valHours = document.getElementById('valHours');
@@ -75,9 +78,25 @@
   const btnPresetWeek = document.getElementById('btnPresetWeek');
   const btnPresetOur = document.getElementById('btnPresetOur');
 
-  // Canvas
-  const canvas = document.getElementById('farmCanvas');
-  const ctx = canvas.getContext('2d');
+  // Section 2 DOM Elements (Reverse Countdown & Alpine Train)
+  const countDays = document.getElementById('countDays');
+  const countHours = document.getElementById('countHours');
+  const countMinutes = document.getElementById('countMinutes');
+  const countSeconds = document.getElementById('countSeconds');
+  const countMillis = document.getElementById('countMillis');
+  const countMicros = document.getElementById('countMicros');
+  const countdownStatus = document.getElementById('countdownStatus');
+  const realRemainingDisplay = document.getElementById('realRemainingDisplay');
+  const trainProgressDisplay = document.getElementById('trainProgressDisplay');
+  const subjectiveRemainingDisplay = document.getElementById('subjectiveRemainingDisplay');
+  const arrivalBanner = document.getElementById('arrivalBanner');
+  const countdownView = document.getElementById('countdownView');
+
+  // Background Canvases
+  const farmCanvas = document.getElementById('farmCanvas');
+  const ctx = farmCanvas.getContext('2d');
+  const trainCanvas = document.getElementById('trainCanvas');
+  const trainCtx = trainCanvas.getContext('2d');
 
   // =========================================================================
   // Math: Calculate Subjective Perceived Time
@@ -85,22 +104,16 @@
 
   /**
    * Calculates the target ratio for a given slider alpha in [0, 1].
-   * Smooth continuous power law:
+   * Continuous power law scaling from 1.0x (Real Time) to 7.0x (Our Time):
    * - alpha = 0.0 => 1.0x (Objective Reality)
-   * - alpha = 0.5 => 7.0x (1 Day = 1 Week)
-   * - alpha = 1.0 => ~52.18x (1 Week = 1 Year, "Our Time")
+   * - alpha = 0.5 => ~2.65x (Perceptual Drift)
+   * - alpha = 1.0 => 7.0x (Our Time: 1 Day = 1 Week)
    */
   function getEffectiveRatio(alpha) {
     if (alpha <= 0.0001) return 1.0;
-    if (alpha >= 0.9999) return RATIO_OUR_TIME;
+    if (alpha >= 0.9999) return RATIO_MAX;
 
-    if (alpha <= 0.5) {
-      // Interpolate smoothly from 1.0x to 7.0x over [0, 0.5]
-      return Math.pow(RATIO_MID, alpha * 2);
-    } else {
-      // Interpolate smoothly from 7.0x to 52.18x over [0.5, 1.0]
-      return RATIO_MID * Math.pow(RATIO_OUR_TIME / RATIO_MID, (alpha - 0.5) * 2);
-    }
+    return Math.pow(RATIO_MAX, alpha);
   }
 
   /**
@@ -226,23 +239,19 @@
   }
 
   function updateHeaderAndLabels(alpha, realDays, effectiveRatio) {
-    // Title transitions
+    // Main Title
+    clockTitle.textContent = 'SINCE WE MET';
+
+    // Subtitle transitions
     if (alpha <= 0.05) {
-      clockTitle.textContent = 'REAL TIME';
       dilationStatus.textContent = '1.0000× — Objective Reality';
-      clockTitle.style.color = '#ffffff';
-    } else if (alpha < 0.35) {
-      clockTitle.textContent = 'PERCEPTUAL DRIFT';
-      dilationStatus.textContent = `${effectiveRatio.toFixed(2)}× — Subtle Dilation`;
-      clockTitle.style.color = '#e2e8f0';
-    } else if (alpha < 0.85) {
-      clockTitle.textContent = 'DAY INTO WEEK';
-      dilationStatus.textContent = `${effectiveRatio.toFixed(1)}× — 1 Day = 1 Week Horizon`;
-      clockTitle.style.color = '#cbd5e1';
+      dilationStatus.style.color = '#94a3b8';
+    } else if (alpha < 0.75) {
+      dilationStatus.textContent = `${effectiveRatio.toFixed(2)}× — Perceptual Drift`;
+      dilationStatus.style.color = '#cbd5e1';
     } else {
-      clockTitle.textContent = 'OUR TIME';
-      dilationStatus.textContent = `${effectiveRatio.toFixed(1)}× — 1 Week = 1 Year Horizon`;
-      clockTitle.style.color = '#ffffff';
+      dilationStatus.textContent = `${effectiveRatio.toFixed(1)}× — Our Time (1 Day = 1 Week)`;
+      dilationStatus.style.color = '#ffffff';
     }
 
     // Badge
@@ -250,7 +259,7 @@
     sliderBadge.textContent = `${pct}% (${effectiveRatio.toFixed(1)}×)`;
 
     // Animal Speed display
-    const animalSpeed = 1.0 + Math.pow(alpha, 1.4) * 2.8;
+    const animalSpeed = 1.0 + Math.pow(alpha, 1.3) * 1.4;
     animalSpeedDisplay.textContent = `${animalSpeed.toFixed(2)}×`;
 
     // Presets Active State
@@ -266,14 +275,33 @@
   let width = 0;
   let height = 0;
 
-  function resizeCanvas() {
+  function resizeCanvases() {
     width = window.innerWidth;
     height = window.innerHeight;
-    canvas.width = width * window.devicePixelRatio;
-    canvas.height = height * window.devicePixelRatio;
+
+    farmCanvas.width = width * window.devicePixelRatio;
+    farmCanvas.height = height * window.devicePixelRatio;
     ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+    trainCanvas.width = width * window.devicePixelRatio;
+    trainCanvas.height = height * window.devicePixelRatio;
+    trainCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+    if (typeof initAlpineRailway === 'function') {
+      initAlpineRailway();
+    }
+    updateScrollCanvasBlend();
   }
-  window.addEventListener('resize', resizeCanvas);
+  window.addEventListener('resize', resizeCanvases);
+
+  function updateScrollCanvasBlend() {
+    const scrollY = window.scrollY || window.pageYOffset;
+    const vh = window.innerHeight;
+    const progress = Math.max(0, Math.min(1, scrollY / (vh * 0.75)));
+    farmCanvas.style.opacity = (1 - progress).toFixed(3);
+    trainCanvas.style.opacity = progress.toFixed(3);
+  }
+  window.addEventListener('scroll', updateScrollCanvasBlend, { passive: true });
 
   // Continuous animation phase state (prevents stuttering during speed changes)
   let horizonPhase = 0;
@@ -865,9 +893,9 @@
     ctx.clearRect(0, 0, width, height);
 
     // Speed multiplier scales gracefully with slider
-    const animalSpeed = 1.0 + Math.pow(distortionAlpha, 1.4) * 2.8;
-    // Seasonal multiplier: 1x at Real Time -> up to ~18x at Our Time
-    const seasonalSpeed = 1.0 + Math.pow(distortionAlpha, 1.4) * 17.0;
+    const animalSpeed = 1.0 + Math.pow(distortionAlpha, 1.3) * 1.4;
+    // Seasonal multiplier: 1x at Real Time -> up to 7x at Our Time
+    const seasonalSpeed = 1.0 + Math.pow(distortionAlpha, 1.3) * 6.0;
 
     // Smooth continuous time and wave phase (completely eliminates tree and scenery stutter)
     animTime += dt;
@@ -965,6 +993,823 @@
   }
 
   // =========================================================================
+  // Section 2: Alpine Railway, Sinuous Track & Venetian Departure Engine
+  // =========================================================================
+
+  let trackSamples = [];
+  let trackTotalLength = 0;
+  let trainLeadDistance = 0;
+  let alpineStars = [];
+  let trainAnimTime = 0;
+  let isArrived = false;
+
+  function initAlpineRailway() {
+    // 1. Generate Night Sky Stars for the Alpine atmosphere
+    alpineStars = [];
+    const starCount = 85;
+    for (let i = 0; i < starCount; i++) {
+      alpineStars.push({
+        x: Math.random() * width,
+        y: Math.random() * (height * 0.58),
+        r: 0.5 + Math.random() * 1.3,
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.6 + Math.random() * 1.8,
+        color: Math.random() > 0.35 ? 'rgba(248, 250, 252, ' : 'rgba(186, 230, 253, ',
+      });
+    }
+
+    // 2. Generate Long Sinuous Mountain Track Path (Catmull-Rom Spline)
+    // Waypoints carefully proportioned so track winds from Venice lagoon (bottom-left)
+    // through rolling valleys and pine switchbacks up to Alpine terminal (top-right)
+    const waypoints = [
+      { x: width * 0.04, y: height * 0.88 }, // P0: Lagoon water edge (Venice departure)
+      { x: width * 0.22, y: height * 0.82 }, // P1: Venetian coastal plain
+      { x: width * 0.45, y: height * 0.74 }, // P2: Foothill ascent entry
+      { x: width * 0.72, y: height * 0.65 }, // P3: Hairpin curve 1
+      { x: width * 0.36, y: height * 0.49 }, // P4: Switchback through pine crags
+      { x: width * 0.64, y: height * 0.37 }, // P5: Elevated mountain viaduct ledge
+      { x: width * 0.82, y: height * 0.27 }, // P6: Alpine pass entrance
+      { x: width * 0.94, y: height * 0.20 }, // P7: Terminal platform under snow peaks
+    ];
+
+    trackSamples = [];
+    let cumDist = 0;
+    const segments = waypoints.length - 1;
+    const stepsPerSegment = 140;
+    let prevPoint = null;
+
+    for (let i = 0; i < segments; i++) {
+      const p0 = waypoints[Math.max(0, i - 1)];
+      const p1 = waypoints[i];
+      const p2 = waypoints[i + 1];
+      const p3 = waypoints[Math.min(waypoints.length - 1, i + 2)];
+
+      for (let s = 0; s < stepsPerSegment; s++) {
+        if (i > 0 && s === 0) continue;
+        const t = s / stepsPerSegment;
+        const t2 = t * t;
+        const t3 = t2 * t;
+
+        const x = 0.5 * (
+          (2 * p1.x) +
+          (-p0.x + p2.x) * t +
+          (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * t2 +
+          (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * t3
+        );
+
+        const y = 0.5 * (
+          (2 * p1.y) +
+          (-p0.y + p2.y) * t +
+          (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * t2 +
+          (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * t3
+        );
+
+        const dx = 0.5 * (
+          (-p0.x + p2.x) +
+          (2 * (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x)) * t +
+          (3 * (-p0.x + 3 * p1.x - 3 * p2.x + p3.x)) * t2
+        );
+
+        const dy = 0.5 * (
+          (-p0.y + p2.y) +
+          (2 * (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y)) * t +
+          (3 * (-p0.y + 3 * p1.y - 3 * p2.y + p3.y)) * t2
+        );
+
+        const angle = Math.atan2(dy, dx);
+
+        if (prevPoint) {
+          const segDist = Math.hypot(x - prevPoint.x, y - prevPoint.y);
+          cumDist += segDist;
+        }
+
+        const point = { x, y, angle, dist: cumDist };
+        trackSamples.push(point);
+        prevPoint = point;
+      }
+    }
+
+    trackTotalLength = cumDist;
+  }
+
+  function getTrackPoint(dist) {
+    if (trackSamples.length === 0) {
+      return { x: 0, y: 0, angle: 0, nx: 0, ny: 1 };
+    }
+
+    let d = dist % trackTotalLength;
+    if (d < 0) d += trackTotalLength;
+
+    let low = 0;
+    let high = trackSamples.length - 1;
+
+    while (low <= high) {
+      const mid = (low + high) >> 1;
+      if (trackSamples[mid].dist < d) {
+        low = mid + 1;
+      } else {
+        high = mid - 1;
+      }
+    }
+
+    const idx1 = Math.max(0, Math.min(trackSamples.length - 1, low - 1));
+    const idx2 = Math.min(trackSamples.length - 1, idx1 + 1);
+    const p1 = trackSamples[idx1];
+    const p2 = trackSamples[idx2];
+    const span = p2.dist - p1.dist;
+    const t = span > 0.0001 ? (d - p1.dist) / span : 0;
+
+    const x = p1.x + (p2.x - p1.x) * t;
+    const y = p1.y + (p2.y - p1.y) * t;
+
+    let dAngle = p2.angle - p1.angle;
+    while (dAngle > Math.PI) dAngle -= Math.PI * 2;
+    while (dAngle < -Math.PI) dAngle += Math.PI * 2;
+    const angle = p1.angle + dAngle * t;
+
+    return {
+      x,
+      y,
+      angle,
+      nx: -Math.sin(angle),
+      ny: Math.cos(angle),
+    };
+  }
+
+  function drawAlpineSkyAndStars(c, w, h, t) {
+    // Sky twilight gradient
+    const skyGrad = c.createLinearGradient(0, 0, 0, h * 0.7);
+    skyGrad.addColorStop(0, '#040711');
+    skyGrad.addColorStop(0.45, '#091322');
+    skyGrad.addColorStop(1, '#0d1b2d');
+    c.fillStyle = skyGrad;
+    c.fillRect(0, 0, w, h);
+
+    // Stars
+    for (let i = 0; i < alpineStars.length; i++) {
+      const s = alpineStars[i];
+      const alpha = 0.2 + 0.6 * (0.5 + 0.5 * Math.sin(s.phase + t * s.speed));
+      c.fillStyle = s.color + alpha.toFixed(2) + ')';
+      c.beginPath();
+      c.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      c.fill();
+    }
+
+    // Polar Star / Alpine Beacon above the peaks
+    const beaconX = w * 0.86;
+    const beaconY = h * 0.08;
+    const bGlow = 0.6 + 0.35 * Math.sin(t * 2.2);
+    c.fillStyle = `rgba(253, 230, 138, ${bGlow})`;
+    c.beginPath();
+    c.arc(beaconX, beaconY, 2.4, 0, Math.PI * 2);
+    c.fill();
+
+    // 4-point subtle star glint
+    c.strokeStyle = `rgba(254, 240, 138, ${bGlow * 0.7})`;
+    c.lineWidth = 1;
+    c.beginPath();
+    c.moveTo(beaconX - 7, beaconY);
+    c.lineTo(beaconX + 7, beaconY);
+    c.moveTo(beaconX, beaconY - 7);
+    c.lineTo(beaconX, beaconY + 7);
+    c.stroke();
+  }
+
+  function drawVeniceLagoon(c, w, h, t) {
+    const waterY = h * 0.74;
+    const waterW = w * 0.44;
+
+    // Lagoon water depth gradient
+    const waterGrad = c.createLinearGradient(0, waterY, 0, h);
+    waterGrad.addColorStop(0, 'rgba(8, 28, 44, 0.75)');
+    waterGrad.addColorStop(0.5, 'rgba(5, 18, 28, 0.90)');
+    waterGrad.addColorStop(1, 'rgba(2, 8, 14, 0.98)');
+    c.fillStyle = waterGrad;
+    c.fillRect(0, waterY, waterW, h - waterY);
+
+    // Shimmering horizontal water ripples
+    c.lineWidth = 1.2;
+    for (let r = 0; r < 7; r++) {
+      const ry = waterY + 16 + r * 16;
+      const rippleWave = Math.sin(t * 1.6 + r * 0.8) * 8;
+      const rAlpha = 0.15 + 0.15 * Math.sin(t * 1.4 + r);
+      c.strokeStyle = `rgba(56, 189, 248, ${rAlpha})`;
+      c.beginPath();
+      c.moveTo(10, ry);
+      c.bezierCurveTo(
+        waterW * 0.25, ry + rippleWave,
+        waterW * 0.60, ry - rippleWave,
+        waterW * 0.90, ry + 2
+      );
+      c.stroke();
+    }
+
+    // Venetian Mooring Poles (Briccole: 3 slanted wooden poles tied with rope)
+    const poleX = w * 0.08;
+    const poleBaseY = waterY + 30;
+    c.save();
+    c.translate(poleX, poleBaseY);
+
+    // Wood poles
+    c.strokeStyle = 'rgba(78, 60, 48, 0.9)';
+    c.lineWidth = 3.5;
+    c.beginPath();
+    c.moveTo(-6, -42);
+    c.lineTo(-4, 18);
+    c.moveTo(0, -48);
+    c.lineTo(0, 18);
+    c.moveTo(6, -40);
+    c.lineTo(4, 18);
+    c.stroke();
+
+    // Rope wrap
+    c.strokeStyle = 'rgba(203, 213, 225, 0.7)';
+    c.lineWidth = 2;
+    c.beginPath();
+    c.moveTo(-8, -24);
+    c.lineTo(8, -24);
+    c.moveTo(-8, -14);
+    c.lineTo(8, -14);
+    c.stroke();
+
+    // Waterline reflection
+    c.strokeStyle = 'rgba(56, 189, 248, 0.25)';
+    c.lineWidth = 2;
+    c.beginPath();
+    c.moveTo(-6, 20);
+    c.lineTo(-4, 38);
+    c.moveTo(0, 20);
+    c.lineTo(0, 42);
+    c.moveTo(6, 20);
+    c.lineTo(4, 36);
+    c.stroke();
+    c.restore();
+
+    // Floating Venetian Gondola Silhouette with Gondolier & Oar
+    const gondolaX = w * 0.15;
+    const gondolaBaseY = waterY + 44;
+    const bobY = Math.sin(t * 1.3) * 2.5;
+
+    c.save();
+    c.translate(gondolaX, gondolaBaseY + bobY);
+
+    // Water reflection under gondola
+    c.fillStyle = 'rgba(56, 189, 248, 0.14)';
+    c.beginPath();
+    c.ellipse(10, 12, 42, 6, 0, 0, Math.PI * 2);
+    c.fill();
+
+    // Gondola Hull (iconic crescent shape)
+    c.fillStyle = 'rgba(15, 23, 42, 0.96)';
+    c.strokeStyle = 'rgba(203, 213, 225, 0.55)';
+    c.lineWidth = 1.2;
+    c.beginPath();
+    c.moveTo(-44, -2);
+    c.quadraticCurveTo(-15, 12, 38, 7);
+    c.quadraticCurveTo(46, -1, 52, -12);
+    c.quadraticCurveTo(42, 5, 28, 6);
+    c.quadraticCurveTo(-20, 7, -44, -2);
+    c.closePath();
+    c.fill();
+    c.stroke();
+
+    // Venetian Ferro (Iron prow with 6 forward prongs)
+    c.strokeStyle = 'rgba(248, 250, 252, 0.9)';
+    c.lineWidth = 1.5;
+    c.beginPath();
+    c.moveTo(48, 0);
+    c.lineTo(54, -16);
+    c.lineTo(51, -18);
+    c.stroke();
+
+    // Gondolier Silhouette (standing at the stern)
+    const gX = -26;
+    const gY = -1;
+
+    // Body
+    c.fillStyle = 'rgba(15, 23, 42, 0.98)';
+    c.beginPath();
+    c.moveTo(gX - 4, gY);
+    c.lineTo(gX - 2, gY - 26);
+    c.lineTo(gX + 5, gY - 26);
+    c.lineTo(gX + 4, gY);
+    c.closePath();
+    c.fill();
+
+    // Head & Straw Hat (Boater)
+    c.beginPath();
+    c.arc(gX + 1, gY - 30, 4, 0, Math.PI * 2);
+    c.fill();
+
+    c.strokeStyle = 'rgba(248, 250, 252, 0.85)';
+    c.lineWidth = 1.4;
+    c.beginPath();
+    c.moveTo(gX - 6, gY - 32);
+    c.lineTo(gX + 8, gY - 32);
+    c.stroke();
+
+    // Arms & Long Oar (Remo) dipping into lagoon water
+    c.strokeStyle = 'rgba(186, 230, 253, 0.95)';
+    c.lineWidth = 1.5;
+    c.beginPath();
+    c.moveTo(gX - 2, gY - 22);
+    c.lineTo(gX + 10, gY - 14);
+    c.lineTo(gX + 24, gY + 12);
+    c.stroke();
+
+    c.restore();
+  }
+
+  function drawAlpineMountains(c, w, h) {
+    // 1. Distant Mountain Silhouette Ridge
+    c.fillStyle = 'rgba(12, 22, 36, 0.7)';
+    c.beginPath();
+    c.moveTo(w * 0.35, h * 0.65);
+    c.lineTo(w * 0.50, h * 0.28);
+    c.lineTo(w * 0.62, h * 0.38);
+    c.lineTo(w * 0.75, h * 0.22);
+    c.lineTo(w * 0.98, h * 0.32);
+    c.lineTo(w, h * 0.75);
+    c.lineTo(w * 0.35, h * 0.75);
+    c.closePath();
+    c.fill();
+
+    // 2. High Alpine Peak 1 (Left shoulder peak)
+    const p1 = { x: w * 0.56, y: h * 0.16, bx1: w * 0.42, bx2: w * 0.70, by: h * 0.52 };
+    drawSingleAlpinePeak(c, p1.x, p1.y, p1.bx1, p1.bx2, p1.by, 0.9);
+
+    // 3. Central Majestic Peak 2 (Highest summit)
+    const p2 = { x: w * 0.75, y: h * 0.08, bx1: w * 0.58, bx2: w * 0.92, by: h * 0.50 };
+    drawSingleAlpinePeak(c, p2.x, p2.y, p2.bx1, p2.bx2, p2.by, 1.0);
+
+    // 4. Terminal Peak 3 (Above the arrival platform)
+    const p3 = { x: w * 0.92, y: h * 0.12, bx1: w * 0.80, bx2: w * 1.05, by: h * 0.46 };
+    drawSingleAlpinePeak(c, p3.x, p3.y, p3.bx1, p3.bx2, p3.by, 0.95);
+
+    // 5. Alpine Conifer (Pine) Clusters on foothills
+    const pines = [
+      { x: w * 0.48, y: h * 0.58, size: 22 },
+      { x: w * 0.51, y: h * 0.61, size: 18 },
+      { x: w * 0.54, y: h * 0.56, size: 24 },
+      { x: w * 0.67, y: h * 0.47, size: 20 },
+      { x: w * 0.70, y: h * 0.49, size: 25 },
+      { x: w * 0.78, y: h * 0.39, size: 22 },
+      { x: w * 0.84, y: h * 0.35, size: 26 },
+      { x: w * 0.88, y: h * 0.31, size: 20 },
+    ];
+
+    for (let i = 0; i < pines.length; i++) {
+      drawAlpinePine(c, pines[i].x, pines[i].y, pines[i].size);
+    }
+
+    // 6. Alpine Station Terminal (Top-Right Arrival Point)
+    drawAlpineTerminalStation(c, w * 0.94, h * 0.20);
+  }
+
+  function drawSingleAlpinePeak(c, apexX, apexY, baseLeftX, baseRightX, baseY, scale = 1.0) {
+    // Shadowed western face
+    c.fillStyle = 'rgba(16, 26, 42, 0.95)';
+    c.beginPath();
+    c.moveTo(apexX, apexY);
+    c.lineTo(baseLeftX, baseY);
+    c.lineTo(apexX + (baseRightX - apexX) * 0.12, baseY);
+    c.closePath();
+    c.fill();
+
+    // Moonlit eastern face
+    c.fillStyle = 'rgba(28, 44, 68, 0.92)';
+    c.beginPath();
+    c.moveTo(apexX, apexY);
+    c.lineTo(apexX + (baseRightX - apexX) * 0.12, baseY);
+    c.lineTo(baseRightX, baseY);
+    c.closePath();
+    c.fill();
+
+    // Pristine Snow Cap & Glacial Cirque
+    c.fillStyle = 'rgba(248, 250, 252, 0.96)';
+    c.beginPath();
+    c.moveTo(apexX, apexY);
+    c.lineTo(apexX - (apexX - baseLeftX) * 0.32, apexY + (baseY - apexY) * 0.32);
+    c.lineTo(apexX - (apexX - baseLeftX) * 0.18, apexY + (baseY - apexY) * 0.38);
+    c.lineTo(apexX + (baseRightX - apexX) * 0.05, apexY + (baseY - apexY) * 0.44);
+    c.lineTo(apexX + (baseRightX - apexX) * 0.22, apexY + (baseY - apexY) * 0.35);
+    c.lineTo(apexX + (baseRightX - apexX) * 0.34, apexY + (baseY - apexY) * 0.32);
+    c.closePath();
+    c.fill();
+
+    // Cool ice-blue crevasse highlight
+    c.strokeStyle = 'rgba(186, 230, 253, 0.8)';
+    c.lineWidth = 1.2;
+    c.beginPath();
+    c.moveTo(apexX, apexY);
+    c.lineTo(apexX + (baseRightX - apexX) * 0.05, apexY + (baseY - apexY) * 0.44);
+    c.stroke();
+  }
+
+  function drawAlpinePine(c, x, y, size) {
+    c.save();
+    c.translate(x, y);
+
+    // Trunk
+    c.fillStyle = 'rgba(30, 24, 20, 0.9)';
+    c.fillRect(-1.5, 0, 3, size * 0.3);
+
+    // 3 tiered evergreen foliage triangles
+    c.fillStyle = 'rgba(14, 28, 32, 0.95)';
+    c.strokeStyle = 'rgba(203, 213, 225, 0.25)';
+    c.lineWidth = 0.8;
+
+    for (let tier = 0; tier < 3; tier++) {
+      const tierY = -size * 0.25 * tier;
+      const w = size * 0.55 * (1 - tier * 0.22);
+      const h = size * 0.42;
+
+      c.beginPath();
+      c.moveTo(0, tierY - h);
+      c.lineTo(w, tierY);
+      c.lineTo(-w, tierY);
+      c.closePath();
+      c.fill();
+      c.stroke();
+    }
+
+    c.restore();
+  }
+
+  function drawAlpineTerminalStation(c, x, y) {
+    c.save();
+    c.translate(x, y);
+
+    // Terminal Platform buffer / bumper
+    c.fillStyle = 'rgba(51, 65, 85, 0.95)';
+    c.fillRect(-8, -10, 16, 20);
+
+    c.strokeStyle = 'rgba(239, 68, 68, 0.9)';
+    c.lineWidth = 2;
+    c.beginPath();
+    c.moveTo(-6, -8);
+    c.lineTo(6, 8);
+    c.moveTo(-6, 8);
+    c.lineTo(6, -8);
+    c.stroke();
+
+    // Platform wooden awning
+    c.fillStyle = 'rgba(30, 41, 59, 0.95)';
+    c.beginPath();
+    c.moveTo(-20, -18);
+    c.lineTo(16, -26);
+    c.lineTo(24, -22);
+    c.lineTo(-12, -14);
+    c.closePath();
+    c.fill();
+
+    // Warm glowing platform lantern (welcoming beacon)
+    const lanternGrad = c.createRadialGradient(8, -12, 1, 8, -12, 28);
+    lanternGrad.addColorStop(0, 'rgba(254, 240, 138, 0.98)');
+    lanternGrad.addColorStop(0.35, 'rgba(251, 191, 36, 0.55)');
+    lanternGrad.addColorStop(1, 'rgba(251, 191, 36, 0)');
+
+    c.fillStyle = lanternGrad;
+    c.beginPath();
+    c.arc(8, -12, 28, 0, Math.PI * 2);
+    c.fill();
+
+    // Signal Mast with green terminal light
+    c.fillStyle = 'rgba(15, 23, 42, 0.95)';
+    c.fillRect(-24, -30, 3, 22);
+
+    c.fillStyle = 'rgba(52, 211, 153, 0.95)';
+    c.shadowColor = 'rgba(52, 211, 153, 0.8)';
+    c.shadowBlur = 8;
+    c.beginPath();
+    c.arc(-22.5, -27, 2.5, 0, Math.PI * 2);
+    c.fill();
+
+    c.restore();
+  }
+
+  function drawRailwayTrack(c) {
+    if (trackSamples.length < 2) return;
+
+    // 1. Dark gravel ballast bed
+    c.save();
+    c.beginPath();
+    c.moveTo(trackSamples[0].x, trackSamples[0].y);
+    for (let i = 1; i < trackSamples.length; i++) {
+      c.lineTo(trackSamples[i].x, trackSamples[i].y);
+    }
+    c.strokeStyle = 'rgba(15, 23, 42, 0.68)';
+    c.lineWidth = 14;
+    c.lineCap = 'round';
+    c.lineJoin = 'round';
+    c.stroke();
+
+    // 2. Sleepers (Railway Cross-Ties) spaced every 11px
+    c.strokeStyle = 'rgba(148, 163, 184, 0.38)';
+    c.lineWidth = 2.2;
+    for (let d = 0; d < trackTotalLength; d += 11) {
+      const pt = getTrackPoint(d);
+      c.beginPath();
+      c.moveTo(pt.x - pt.nx * 6.5, pt.y - pt.ny * 6.5);
+      c.lineTo(pt.x + pt.nx * 6.5, pt.y + pt.ny * 6.5);
+      c.stroke();
+    }
+
+    // 3. Double Steel Rails (Gauge = 7px, +3.5 and -3.5 from center)
+    // Left Rail
+    c.beginPath();
+    for (let i = 0; i < trackSamples.length; i++) {
+      const p = trackSamples[i];
+      const nx = -Math.sin(p.angle);
+      const ny = Math.cos(p.angle);
+      const rx = p.x + nx * 3.5;
+      const ry = p.y + ny * 3.5;
+      if (i === 0) c.moveTo(rx, ry);
+      else c.lineTo(rx, ry);
+    }
+    c.strokeStyle = 'rgba(226, 232, 240, 0.75)';
+    c.lineWidth = 1.4;
+    c.stroke();
+
+    // Right Rail
+    c.beginPath();
+    for (let i = 0; i < trackSamples.length; i++) {
+      const p = trackSamples[i];
+      const nx = -Math.sin(p.angle);
+      const ny = Math.cos(p.angle);
+      const rx = p.x - nx * 3.5;
+      const ry = p.y - ny * 3.5;
+      if (i === 0) c.moveTo(rx, ry);
+      else c.lineTo(rx, ry);
+    }
+    c.stroke();
+
+    // Rail Top Gleam highlight
+    c.strokeStyle = 'rgba(255, 255, 255, 0.38)';
+    c.lineWidth = 0.6;
+    c.stroke();
+
+    c.restore();
+  }
+
+  function drawArticulatedTrain(c, distortionAlpha, dt) {
+    if (trackTotalLength <= 0) return;
+
+    // Movement: If arrived at terminal, stay smoothly docked
+    if (isArrived) {
+      trainLeadDistance = trackTotalLength - 28;
+    } else {
+      const baseTrainSpeed = 38; // px/sec
+      const trainSpeed = baseTrainSpeed * (1.0 + Math.pow(distortionAlpha, 1.2) * 3.5);
+      trainLeadDistance = (trainLeadDistance + trainSpeed * dt) % trackTotalLength;
+    }
+
+    // Train composition:
+    // Lead Locomotive (32px) + 3 Passenger Carriages (28px each) + 4px gangway gaps
+    const dLoco = trainLeadDistance - 16;
+    const dCar1 = trainLeadDistance - 50;
+    const dCar2 = trainLeadDistance - 82;
+    const dCar3 = trainLeadDistance - 114;
+
+    const cars = [
+      { type: 'car', dist: dCar3, num: 3 },
+      { type: 'car', dist: dCar2, num: 2 },
+      { type: 'car', dist: dCar1, num: 1 },
+      { type: 'loco', dist: dLoco, num: 0 },
+    ];
+
+    // 1. Draw connecting gangway bellows between carriages
+    c.strokeStyle = 'rgba(15, 23, 42, 0.95)';
+    c.lineWidth = 5;
+    for (let i = 0; i < cars.length - 1; i++) {
+      const ptA = getTrackPoint(cars[i].dist + 14);
+      const ptB = getTrackPoint(cars[i + 1].dist - (cars[i + 1].type === 'loco' ? 16 : 14));
+      c.beginPath();
+      c.moveTo(ptA.x, ptA.y);
+      c.lineTo(ptB.x, ptB.y);
+      c.stroke();
+    }
+
+    // 2. Draw Locomotive Headlight Beam projecting forward along rails
+    const locoPt = getTrackPoint(dLoco);
+    c.save();
+    c.translate(locoPt.x, locoPt.y);
+    c.rotate(locoPt.angle);
+
+    const beamGrad = c.createRadialGradient(16, 0, 4, 60, 0, 75);
+    beamGrad.addColorStop(0, 'rgba(254, 240, 138, 0.45)');
+    beamGrad.addColorStop(0.5, 'rgba(254, 240, 138, 0.20)');
+    beamGrad.addColorStop(1, 'rgba(254, 240, 138, 0)');
+
+    c.fillStyle = beamGrad;
+    c.beginPath();
+    c.moveTo(16, -2);
+    c.lineTo(82, -26);
+    c.lineTo(82, 26);
+    c.lineTo(16, 2);
+    c.closePath();
+    c.fill();
+    c.restore();
+
+    // 3. Draw Passenger Carriages (cars 3, 2, 1)
+    for (let i = 0; i < 3; i++) {
+      const car = cars[i];
+      const pt = getTrackPoint(car.dist);
+      c.save();
+      c.translate(pt.x, pt.y);
+      c.rotate(pt.angle);
+
+      // Chassis shadow
+      c.fillStyle = 'rgba(0, 0, 0, 0.4)';
+      c.fillRect(-13, -5, 26, 10);
+
+      // Carriage Body (Eurofima: Silver-gray with ÖBB Crimson accent)
+      c.fillStyle = 'rgba(203, 213, 225, 0.96)';
+      c.beginPath();
+      c.roundRect(-14, -4.5, 28, 9, 2);
+      c.fill();
+
+      // ÖBB Crimson Window Stripe
+      c.fillStyle = 'rgba(225, 29, 72, 0.95)';
+      c.fillRect(-14, -2.5, 28, 5);
+
+      // 4 Warm Glowing Passenger Windows
+      c.fillStyle = 'rgba(253, 224, 71, 0.92)';
+      c.shadowColor = 'rgba(253, 224, 71, 0.8)';
+      c.shadowBlur = 4;
+      for (let w = 0; w < 4; w++) {
+        const wx = -10 + w * 6.5;
+        c.fillRect(wx, -1.8, 4.2, 3.6);
+      }
+      c.shadowBlur = 0;
+
+      // Dark graphite roof
+      c.fillStyle = 'rgba(30, 41, 59, 0.95)';
+      c.fillRect(-13.5, -4.5, 27, 1.2);
+
+      c.restore();
+    }
+
+    // 4. Draw Taurus Locomotive (Car 0)
+    c.save();
+    c.translate(locoPt.x, locoPt.y);
+    c.rotate(locoPt.angle);
+
+    // Locomotive Body (ÖBB Traffic Red)
+    c.fillStyle = 'rgba(225, 29, 72, 0.98)';
+    c.beginPath();
+    // Aerodynamic curved nose on forward right (+X)
+    c.moveTo(-15, -4.8);
+    c.lineTo(11, -4.8);
+    c.quadraticCurveTo(16, -4, 16, 0);
+    c.quadraticCurveTo(16, 4, 11, 4.8);
+    c.lineTo(-15, 4.8);
+    c.closePath();
+    c.fill();
+
+    // Dark graphite aerodynamic cab roof
+    c.fillStyle = 'rgba(30, 41, 59, 0.98)';
+    c.fillRect(-14, -3.2, 22, 6.4);
+
+    // Windshield (Front cab glass)
+    c.fillStyle = 'rgba(186, 230, 253, 0.9)';
+    c.fillRect(8, -3.5, 4, 7);
+
+    // Metal Pantographs on roof
+    c.strokeStyle = 'rgba(148, 163, 184, 0.85)';
+    c.lineWidth = 1;
+    c.beginPath();
+    c.moveTo(-8, -3);
+    c.lineTo(-5, -6);
+    c.lineTo(-2, -3);
+    c.moveTo(2, -3);
+    c.lineTo(5, -6);
+    c.lineTo(8, -3);
+    c.stroke();
+
+    // Twin High-Intensity Headlights + Center Lantern
+    c.fillStyle = 'rgba(255, 255, 255, 0.98)';
+    c.shadowColor = 'rgba(254, 240, 138, 0.95)';
+    c.shadowBlur = 6;
+    c.beginPath();
+    c.arc(15.5, -2.5, 1.3, 0, Math.PI * 2);
+    c.arc(15.5, 2.5, 1.3, 0, Math.PI * 2);
+    c.arc(14, 0, 1.1, 0, Math.PI * 2);
+    c.fill();
+    c.shadowBlur = 0;
+
+    c.restore();
+  }
+
+  function renderTrainAtmosphere(distortionAlpha, dt = 0.016) {
+    trainCtx.clearRect(0, 0, width, height);
+    trainAnimTime += dt;
+
+    // 1. Alpine Twilight Sky & Starfield
+    drawAlpineSkyAndStars(trainCtx, width, height, trainAnimTime);
+
+    // 2. Venetian Lagoon Departure Area (Bottom-Left)
+    drawVeniceLagoon(trainCtx, width, height, trainAnimTime);
+
+    // 3. Alpine Mountain Massifs & Terminal Station (Top-Right)
+    drawAlpineMountains(trainCtx, width, height);
+
+    // 4. Sinuous Railway Track
+    drawRailwayTrack(trainCtx);
+
+    // 5. Articulated ÖBB Passenger Express Train
+    drawArticulatedTrain(trainCtx, distortionAlpha, dt);
+  }
+
+  // =========================================================================
+  // Section 2: Reverse Countdown Chronometer Engine
+  // =========================================================================
+
+  function updateCountdown(alpha, dt) {
+    let refNowMs;
+    if (state.simulatedDays !== null) {
+      refNowMs = ORIGIN_DATE.getTime() + (state.simulatedDays * SECONDS_PER_DAY * 1000);
+    } else if (state.isPaused) {
+      refNowMs = ORIGIN_DATE.getTime() + (state.pausedTimeMicros / 1000);
+    } else {
+      refNowMs = Date.now();
+    }
+
+    const realRemainingMs = ARRIVAL_DATE.getTime() - refNowMs;
+    const effectiveRatio = getEffectiveRatio(alpha);
+
+    if (realRemainingMs <= 0) {
+      // Terminal destination reached!
+      isArrived = true;
+      arrivalBanner.classList.remove('hidden');
+      countdownView.style.opacity = '0.35';
+
+      countDays.textContent = '000';
+      countHours.textContent = '00';
+      countMinutes.textContent = '00';
+      countSeconds.textContent = '00';
+      countMillis.textContent = '000';
+      countMicros.textContent = '000';
+
+      countdownStatus.textContent = 'DESTINATION REACHED • SEP 11, 20:36';
+      countdownStatus.style.color = '#38bdf8';
+
+      realRemainingDisplay.textContent = '0d 00h 00m 00s (Arrived)';
+      subjectiveRemainingDisplay.textContent = '0d 00h 00m 00s (Arrived)';
+      trainProgressDisplay.textContent = '100.0% (Terminal Station)';
+      return;
+    }
+
+    // Journey in progress
+    isArrived = false;
+    arrivalBanner.classList.add('hidden');
+    countdownView.style.opacity = '1.0';
+
+    // Reverse time dilation: perceived remaining time shrinks by effectiveRatio
+    const subMsFraction = (performance.now() % 1);
+    const perceivedRemainingMicros = Math.max(0, ((realRemainingMs + subMsFraction) * 1000) / effectiveRatio);
+
+    const parts = decomposeMicros(perceivedRemainingMicros);
+    const totalRemainingDays = parts.years * 365 + parts.days;
+
+    countDays.textContent = pad(totalRemainingDays, 3);
+    countHours.textContent = pad(parts.hours, 2);
+    countMinutes.textContent = pad(parts.minutes, 2);
+    countSeconds.textContent = pad(parts.seconds, 2);
+    countMillis.textContent = pad(parts.millis, 3);
+    countMicros.textContent = pad(parts.micros, 3);
+
+    // Dynamic subtitle feedback
+    if (alpha <= 0.05) {
+      countdownStatus.textContent = 'Objective Reality (1.00× Real-Time Arrival Clock)';
+      countdownStatus.style.color = 'var(--text-silver-muted)';
+    } else if (alpha >= 0.95) {
+      countdownStatus.textContent = 'Our Time: 7.0× Compression (1 Day = 1 Week)';
+      countdownStatus.style.color = '#38bdf8';
+    } else {
+      countdownStatus.textContent = `${effectiveRatio.toFixed(2)}× Subjective Arrival Compression`;
+      countdownStatus.style.color = '#7dd3fc';
+    }
+
+    // Scientific Tickers
+    realRemainingDisplay.textContent = formatDuration(realRemainingMs);
+    subjectiveRemainingDisplay.textContent = formatDuration(realRemainingMs / effectiveRatio);
+
+    const trackPct = trackTotalLength > 0 ? ((trainLeadDistance / trackTotalLength) * 100).toFixed(1) : '0.0';
+    trainProgressDisplay.textContent = `${trackPct}% (Alpine Line)`;
+  }
+
+  function formatDuration(ms) {
+    if (ms <= 0) return '0d 00h 00m 00s';
+    const totalSec = Math.floor(ms / 1000);
+    const d = Math.floor(totalSec / SECONDS_PER_DAY);
+    const h = Math.floor((totalSec % SECONDS_PER_DAY) / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    return `${d}d ${pad(h, 2)}h ${pad(m, 2)}m ${pad(s, 2)}s`;
+  }
+
+  // =========================================================================
   // Main Animation & Chronometer Loop
   // =========================================================================
 
@@ -997,7 +1842,7 @@
     const perceivedMicros = calculatePerceivedMicros(realElapsedMicros, alpha);
     const effectiveRatio = realElapsedMicros > 0 ? (perceivedMicros / realElapsedMicros) : 1.0;
 
-    // 3. Update UI Units
+    // 3. Update Section 1 UI Units ("Since We Met")
     const parts = decomposeMicros(perceivedMicros);
 
     valYears.textContent = pad(parts.years, 2);
@@ -1028,8 +1873,12 @@
     // Dynamic Header & Status
     updateHeaderAndLabels(alpha, realDays, effectiveRatio);
 
-    // Render Canvas Atmosphere with Seasonal Delta Time
+    // Render Canvas Atmosphere with Seasonal Delta Time (Section 1)
     renderAtmosphere(alpha, dt);
+
+    // 4. Update Section 2 Reverse Countdown & Train Atmosphere
+    updateCountdown(alpha, dt);
+    renderTrainAtmosphere(alpha, dt);
 
     requestAnimationFrame(mainLoop);
   }
@@ -1121,7 +1970,7 @@
   // =========================================================================
   // Initialize
   // =========================================================================
-  resizeCanvas();
+  resizeCanvases();
   initBinsGrid();
   setSliderValue(0); // Start at Real Time
 
