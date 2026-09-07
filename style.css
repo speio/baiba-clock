@@ -5,12 +5,12 @@
    ========================================================================== */
 
 :root {
-  --bg-page: #f8fafc;
+  --bg-page: #f1f5f9;
   --bg-surface: #ffffff;
-  --bg-card: rgba(255, 255, 255, 0.82);
-  --bg-card-hover: rgba(255, 255, 255, 0.95);
+  --bg-card: rgba(255, 255, 255, 0.58);
+  --bg-card-hover: rgba(255, 255, 255, 0.72);
   --bg-glass-border: rgba(226, 232, 240, 0.85);
-  --bg-glass-highlight: rgba(255, 255, 255, 0.9);
+  --bg-glass-highlight: rgba(255, 255, 255, 0.95);
 
   --text-pure: #0f172a;
   --text-primary: #1e293b;
@@ -74,8 +74,8 @@ body {
   overflow-x: hidden;
 }
 
-/* Background Canvas Layers */
-#farmCanvas, #trainCanvas {
+/* Background Canvas Layer */
+#farmCanvas {
   position: fixed;
   top: 0;
   left: 0;
@@ -83,11 +83,6 @@ body {
   height: 100vh;
   z-index: 1;
   pointer-events: none;
-  transition: opacity 0.4s ease;
-}
-
-#trainCanvas {
-  opacity: 0;
 }
 
 /* Main Layout Container */
@@ -495,34 +490,54 @@ body {
 }
 
 /* ==========================================================================
-   Section 2: Countdown / Arrival
+   Section 2: Nearness (Countdown & Journey Track)
    ========================================================================== */
-.countdown-header {
-  box-shadow: var(--card-shadow);
-}
-
-.waypoint-badge {
+.train-journey-track {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 32px;
+  padding: 12px 20px;
+  background: rgba(248, 250, 252, 0.7);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: var(--border-radius-md);
 }
 
-.waypoint-badge.align-right {
-  flex-direction: row-reverse;
-}
-
-.waypoint-svg {
-  color: var(--text-pure);
+.track-endpoint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
   flex-shrink: 0;
 }
 
-.waypoint-meta {
-  display: flex;
-  flex-direction: column;
+.track-endpoint .endpoint-svg {
+  color: var(--text-pure);
+  transition: transform 0.2s ease;
 }
 
-.waypoint-meta.text-right {
-  align-items: flex-end;
+.endpoint-time {
+  font-size: 0.76rem;
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+}
+
+.track-canvas-container {
+  flex: 1;
+  position: relative;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+#trainTrackCanvas {
+  width: 100%;
+  height: 48px;
+  display: block;
 }
 
 /* Arrival Banner */

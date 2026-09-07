@@ -3,25 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Since we met</title>
+  <title>First brush</title>
   <meta name="description" content="Relativistic chronometer anchored to August 26, 2026.">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Ambient Background Canvases -->
+  <!-- Ambient Background Canvas -->
   <canvas id="farmCanvas"></canvas>
-  <canvas id="trainCanvas"></canvas>
 
   <!-- Main User Interface -->
   <main class="app-container">
-    <!-- Section 1: Since We Met -->
+    <!-- Section 1: First brush -->
     <section id="sectionSinceWeMet" class="page-section">
       <header class="top-header">
         <div class="header-left">
           <span class="meta-value">2026.08.26</span>
         </div>
         <div class="header-center">
-          <h1 id="clockTitle" class="title-header">SINCE WE MET</h1>
+          <h1 id="clockTitle" class="title-header">FIRST BRUSH</h1>
         </div>
         <div class="header-right">
           <span class="meta-value">00:00:00</span>
@@ -143,13 +142,29 @@
 
     <!-- Section 2: Countdown & Arrival Journey -->
     <section id="sectionCountdown" class="page-section countdown-section">
-      <!-- Section Header with Gondolier & Alpine Peak Icons -->
-      <header class="top-header countdown-header">
-        <div class="header-left waypoint-origin">
-          <div class="waypoint-badge">
-            <svg class="waypoint-svg" viewBox="0 0 54 36" width="46" height="30" fill="none" stroke="currentColor">
+      <!-- Symmetrical Section 2 Header -->
+      <header class="top-header">
+        <div class="header-left">
+          <span class="meta-value">2026.09.11</span>
+        </div>
+        <div class="header-center">
+          <h2 class="title-header">NEARNESS</h2>
+        </div>
+        <div class="header-right">
+          <span class="meta-value">20:36:00</span>
+        </div>
+      </header>
+
+      <!-- Countdown Hero Display Card with Train Track on Top -->
+      <section class="clock-display-card countdown-card">
+        <div class="glass-reflection"></div>
+
+        <!-- Train Track running back and forth between Gondola and Mountains -->
+        <div class="train-journey-track">
+          <div class="track-endpoint endpoint-gondola" title="15:47">
+            <svg class="endpoint-svg gondola-svg" viewBox="0 0 54 36" width="46" height="30" fill="none" stroke="currentColor">
               <!-- Venetian Gondola profile with ferro (prow) -->
-              <path d="M 4 24 C 12 24, 16 26, 27 26 C 38 26, 43 21, 50 14 C 47 26, 36 30, 22 30 C 10 30, 4 27, 4 24 Z" fill="rgba(15,23,42,0.08)" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M 4 24 C 12 24, 16 26, 27 26 C 38 26, 43 21, 50 14 C 47 26, 36 30, 22 30 C 10 30, 4 27, 4 24 Z" fill="rgba(15,23,42,0.06)" stroke="currentColor" stroke-width="1.3"/>
               <path d="M 50 14 L 52 7 L 48 8 L 50 14" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
               <!-- Gondolier standing with oar -->
               <circle cx="18" cy="10.5" r="2.8" fill="currentColor"/>
@@ -159,22 +174,16 @@
               <!-- Lagoon Water Ripples -->
               <path d="M 2 32 C 6 31, 9 33, 14 32 C 19 31, 23 33, 28 32 C 33 31, 37 33, 42 32" stroke="#38bdf8" stroke-width="1.2" stroke-linecap="round"/>
             </svg>
-            <div class="waypoint-meta">
-              <span class="meta-value">15:47</span>
-            </div>
+            <span class="endpoint-time">15:47</span>
           </div>
-        </div>
 
-        <div class="header-center">
-          <h2 class="title-header countdown-title">UNTIL ARRIVAL</h2>
-        </div>
+          <div class="track-canvas-container">
+            <canvas id="trainTrackCanvas"></canvas>
+          </div>
 
-        <div class="header-right waypoint-destination">
-          <div class="waypoint-badge align-right">
-            <div class="waypoint-meta text-right">
-              <span class="meta-value">20:36</span>
-            </div>
-            <svg class="waypoint-svg" viewBox="0 0 54 36" width="46" height="30" fill="none" stroke="currentColor">
+          <div class="track-endpoint endpoint-mountains" title="20:36">
+            <span class="endpoint-time">20:36</span>
+            <svg class="endpoint-svg alpine-svg" viewBox="0 0 54 36" width="46" height="30" fill="none" stroke="currentColor">
               <!-- Left Peak -->
               <polygon points="6,31 18,13 30,31" fill="rgba(148,163,184,0.25)" stroke="currentColor" stroke-width="1.2"/>
               <polygon points="18,13 15,18 19,18" fill="#ffffff" stroke="#94a3b8" stroke-width="0.6"/>
@@ -188,34 +197,35 @@
             </svg>
           </div>
         </div>
-      </header>
 
-      <!-- Countdown Hero Display Card -->
-      <section class="clock-display-card countdown-card">
-        <div class="glass-reflection"></div>
-
-        <!-- Reverse Dilated Countdown Breakdown -->
+        <!-- Identical 7-Unit Breakdown Counting Down -->
         <div id="countdownView" class="clock-view active">
+          <div class="unit-group" id="countYearsGroup">
+            <div class="digit-value" id="countYears">00</div>
+            <div class="unit-label">YEARS</div>
+          </div>
+          <span class="unit-separator">:</span>
+
           <div class="unit-group" id="countDaysGroup">
-            <div class="digit-value" id="countDays">003</div>
+            <div class="digit-value" id="countDays">004</div>
             <div class="unit-label">DAYS</div>
           </div>
           <span class="unit-separator">:</span>
 
           <div class="unit-group" id="countHoursGroup">
-            <div class="digit-value" id="countHours">21</div>
+            <div class="digit-value" id="countHours">01</div>
             <div class="unit-label">HOURS</div>
           </div>
           <span class="unit-separator">:</span>
 
           <div class="unit-group" id="countMinutesGroup">
-            <div class="digit-value" id="countMinutes">48</div>
+            <div class="digit-value" id="countMinutes">37</div>
             <div class="unit-label">MINUTES</div>
           </div>
           <span class="unit-separator">:</span>
 
           <div class="unit-group" id="countSecondsGroup">
-            <div class="digit-value" id="countSeconds">12</div>
+            <div class="digit-value" id="countSeconds">22</div>
             <div class="unit-label">SECONDS</div>
           </div>
           <span class="unit-separator">.</span>
@@ -232,7 +242,7 @@
           </div>
         </div>
 
-        <!-- Arrival Celebration Banner (Revealed when arrival time reached) -->
+        <!-- Arrival Celebration Banner -->
         <div id="arrivalBanner" class="arrival-banner hidden">
           <div class="arrival-sparkle">✦ ✦ ✦</div>
           <h3 class="arrival-text">SHE HAS ARRIVED</h3>

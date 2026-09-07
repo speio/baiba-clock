@@ -73,7 +73,8 @@
   const btnPresetWeek = document.getElementById('btnPresetWeek');
   const btnPresetOur = document.getElementById('btnPresetOur');
 
-  // Section 2 DOM Elements (Reverse Countdown)
+  // Section 2 DOM Elements (Reverse Countdown: "Nearness")
+  const countYears = document.getElementById('countYears');
   const countDays = document.getElementById('countDays');
   const countHours = document.getElementById('countHours');
   const countMinutes = document.getElementById('countMinutes');
@@ -83,11 +84,11 @@
   const arrivalBanner = document.getElementById('arrivalBanner');
   const countdownView = document.getElementById('countdownView');
 
-  // Background Canvases
+  // Canvases
   const farmCanvas = document.getElementById('farmCanvas');
   const ctx = farmCanvas.getContext('2d');
-  const trainCanvas = document.getElementById('trainCanvas');
-  const trainCtx = trainCanvas.getContext('2d');
+  const trainTrackCanvas = document.getElementById('trainTrackCanvas');
+  const trackCtx = trainTrackCanvas ? trainTrackCanvas.getContext('2d') : null;
 
   // =========================================================================
   // Math: Calculate Subjective Perceived Time
@@ -225,31 +226,31 @@
   let width = 0;
   let height = 0;
 
+  let trackCanvasWidth = 600;
+  let trackCanvasHeight = 48;
+
   function resizeCanvases() {
     width = window.innerWidth;
     height = window.innerHeight;
 
     farmCanvas.width = width * window.devicePixelRatio;
     farmCanvas.height = height * window.devicePixelRatio;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
 
-    trainCanvas.width = width * window.devicePixelRatio;
-    trainCanvas.height = height * window.devicePixelRatio;
-    trainCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
-
-    initAlpineRailway();
-    updateScrollCanvasBlend();
+    if (trainTrackCanvas && trainTrackCanvas.parentElement) {
+      const rect = trainTrackCanvas.parentElement.getBoundingClientRect();
+      trackCanvasWidth = Math.max(200, rect.width);
+      trackCanvasHeight = 48;
+      trainTrackCanvas.width = trackCanvasWidth * window.devicePixelRatio;
+      trainTrackCanvas.height = trackCanvasHeight * window.devicePixelRatio;
+      if (trackCtx) {
+        trackCtx.setTransform(1, 0, 0, 1, 0, 0);
+        trackCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      }
+    }
   }
   window.addEventListener('resize', resizeCanvases);
-
-  function updateScrollCanvasBlend() {
-    const scrollY = window.scrollY || window.pageYOffset;
-    const vh = window.innerHeight;
-    const progress = Math.max(0, Math.min(1, scrollY / (vh * 0.75)));
-    farmCanvas.style.opacity = (1 - progress).toFixed(3);
-    trainCanvas.style.opacity = progress.toFixed(3);
-  }
-  window.addEventListener('scroll', updateScrollCanvasBlend, { passive: true });
 
   let horizonPhase = 0;
   let animTime = 0;
@@ -275,14 +276,14 @@
 
   // 2. Surreal Farm Animals (2 Goats, 3 Dogs including 1 Golden, 4 Cats)
   class SurrealAnimal {
-    constructor(type, index, totalOfKind, colorScheme = 'ink') {
+    constructor(type, index, totalOfKind, colorScheme = 'ink', customBaseY = null) {
       this.type = type;
       this.index = index;
       this.colorScheme = colorScheme;
       this.x = (index / totalOfKind) * 1200 + Math.random() * 200;
-      this.baseY = colorScheme === 'golden' ? 0.60 : (0.64 + (index % 3) * 0.08);
+      this.baseY = customBaseY !== null ? customBaseY : (colorScheme === 'golden' ? 0.85 : (0.60 + (index % 3) * 0.10));
       this.phase = Math.random() * Math.PI * 2;
-      this.size = type === 'goat' ? 22 : (type === 'dog' ? (colorScheme === 'golden' ? 20 : 18) : 13);
+      this.size = type === 'goat' ? 22 : (type === 'dog' ? (colorScheme === 'golden' ? 21 : 18) : 13);
       this.baseSpeed = type === 'dog' ? (colorScheme === 'golden' ? 1.48 : 1.52) : (type === 'cat' ? 1.1 : 0.9);
       this.stride = Math.random() * Math.PI * 2;
       this.trail = [];
@@ -298,7 +299,7 @@
         this.trail = [];
       }
 
-      const currentY = canvasHeight * this.baseY + Math.sin(this.x * 0.005 + this.phase) * 35;
+      const currentY = canvasHeight * this.baseY + Math.sin(this.x * 0.004 + this.phase) * 16;
 
       this.trail.push({ x: this.x, y: currentY });
       if (this.trail.length > Math.min(18, Math.floor(4 + speedMultiplier * 2.5))) {
@@ -471,16 +472,58 @@
     }
   }
 
+  // Soaring Birds in Upper Sky
+  class SurrealBird {
+    constructor(index) {
+      this.x = Math.random() * 1200;
+      this.yRatio = 0.08 + (index * 0.04) + Math.random() * 0.03;
+      this.speed = 1.2 + Math.random() * 0.6;
+      this.size = 5.5 + Math.random() * 2.5;
+      this.wingPhase = Math.random() * Math.PI * 2;
+    }
+
+    update(dt, speedMult, canvasWidth) {
+      this.x += this.speed * speedMult * 1.5;
+      this.wingPhase += 0.15 * speedMult;
+      if (this.x > canvasWidth + 50) {
+        this.x = -50;
+      }
+    }
+
+    draw(ctx, canvasHeight) {
+      const birdY = canvasHeight * this.yRatio + Math.sin(this.x * 0.005) * 8;
+      const wingY = Math.sin(this.wingPhase) * (this.size * 0.65);
+      ctx.save();
+      ctx.strokeStyle = 'rgba(15, 23, 42, 0.72)';
+      ctx.lineWidth = 1.4;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(this.x - this.size, birdY - wingY);
+      ctx.quadraticCurveTo(this.x - this.size * 0.35, birdY + wingY * 0.3, this.x, birdY);
+      ctx.quadraticCurveTo(this.x + this.size * 0.35, birdY + wingY * 0.3, this.x + this.size, birdY - wingY);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  const surrealBirds = [
+    new SurrealBird(0),
+    new SurrealBird(1),
+    new SurrealBird(2),
+    new SurrealBird(3),
+    new SurrealBird(4),
+  ];
+
   const surrealAnimals = [
-    new SurrealAnimal('goat', 0, 2),
-    new SurrealAnimal('goat', 1, 2),
-    new SurrealAnimal('dog', 0, 3, 'ink'),
-    new SurrealAnimal('dog', 1, 3, 'ink'),
-    new SurrealAnimal('dog', 2, 3, 'golden'),
-    new SurrealAnimal('cat', 0, 4),
-    new SurrealAnimal('cat', 1, 4),
-    new SurrealAnimal('cat', 2, 4),
-    new SurrealAnimal('cat', 3, 4),
+    new SurrealAnimal('goat', 0, 2, 'ink', 0.44),
+    new SurrealAnimal('goat', 1, 2, 'ink', 0.76),
+    new SurrealAnimal('dog', 0, 3, 'ink', 0.48),
+    new SurrealAnimal('dog', 1, 3, 'ink', 0.88),
+    new SurrealAnimal('dog', 2, 3, 'golden', 0.85),
+    new SurrealAnimal('cat', 0, 4, 'ink', 0.42),
+    new SurrealAnimal('cat', 1, 4, 'ink', 0.62),
+    new SurrealAnimal('cat', 2, 4, 'ink', 0.80),
+    new SurrealAnimal('cat', 3, 4, 'ink', 0.92),
   ];
 
   // 3. Seasonal Birch Trees & Rye Flora
@@ -742,7 +785,14 @@
   ];
 
   function renderAtmosphere(distortionAlpha, dt = 0.016) {
-    ctx.clearRect(0, 0, width, height);
+    // 1. Luminous Daylight Sky Gradient
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, height);
+    skyGrad.addColorStop(0, '#f8fafc');
+    skyGrad.addColorStop(0.35, '#f0f9ff');
+    skyGrad.addColorStop(0.68, '#fefce8');
+    skyGrad.addColorStop(1, '#f1f5f9');
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, width, height);
 
     const animalSpeed = 1.0 + Math.pow(distortionAlpha, 1.3) * 1.4;
     const seasonalSpeed = 1.0 + Math.pow(distortionAlpha, 1.3) * 6.0;
@@ -750,44 +800,46 @@
     animTime += dt;
     horizonPhase += dt * 0.5 * animalSpeed;
 
-    const horizonY = height * 0.72;
+    const horizonY = height * 0.70;
 
-    // Flecks
-    for (let i = 0; i < flecks.length; i++) {
-      const f = flecks[i];
-      f.x += f.vx * (1.0 + distortionAlpha * 1.5);
-      f.y += f.vy * (1.0 + distortionAlpha * 1.2);
-      f.angle += f.rotationSpeed;
-
-      if (f.x > width + 20) f.x = -20;
-      if (f.y > height + 20) f.y = -20;
-
-      ctx.save();
-      ctx.translate(f.x, f.y);
-      ctx.rotate(f.angle);
-
-      if (f.hue === 'rye') {
-        ctx.fillStyle = `rgba(217, 119, 6, ${f.opacity * (1.0 + distortionAlpha * 0.4)})`;
-      } else {
-        ctx.fillStyle = `rgba(100, 116, 139, ${f.opacity * (1.0 + distortionAlpha * 0.4)})`;
-      }
-
-      ctx.fillRect(-f.length / 2, -f.width / 2, f.length, f.width);
-      ctx.restore();
-    }
-
-    // Pasture horizon line
+    // 2. Rolling Horizon Hills (Watercolor wash)
     ctx.save();
-    ctx.strokeStyle = `rgba(15, 23, 42, ${0.08 + distortionAlpha * 0.05})`;
-    ctx.lineWidth = 1.0;
+    // Distant hill
+    ctx.fillStyle = 'rgba(226, 232, 240, 0.45)';
     ctx.beginPath();
-    ctx.moveTo(0, horizonY);
+    ctx.moveTo(0, height);
+    ctx.lineTo(0, horizonY - 26);
     for (let x = 0; x <= width; x += 40) {
+      const dy = Math.sin(x * 0.002 + horizonPhase * 0.5) * 20;
+      ctx.lineTo(x, horizonY - 26 + dy);
+    }
+    ctx.lineTo(width, height);
+    ctx.closePath();
+    ctx.fill();
+
+    // Pasture foreground hill
+    ctx.fillStyle = 'rgba(241, 245, 249, 0.65)';
+    ctx.strokeStyle = `rgba(15, 23, 42, ${0.10 + distortionAlpha * 0.06})`;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(0, height);
+    ctx.lineTo(0, horizonY);
+    for (let x = 0; x <= width; x += 35) {
       const dy = Math.sin(x * 0.003 + horizonPhase) * 12;
       ctx.lineTo(x, horizonY + dy);
     }
+    ctx.lineTo(width, height);
+    ctx.closePath();
+    ctx.fill();
     ctx.stroke();
     ctx.restore();
+
+    // 3. Soaring Birds across the upper sky
+    for (let i = 0; i < surrealBirds.length; i++) {
+      const bird = surrealBirds[i];
+      bird.update(dt, animalSpeed, width);
+      bird.draw(ctx, height);
+    }
 
     // Trees
     for (let i = 0; i < surrealTrees.length; i++) {
@@ -830,7 +882,6 @@
       ctx.fill();
       ctx.restore();
     }
-
     // Animals
     for (let i = 0; i < surrealAnimals.length; i++) {
       const animal = surrealAnimals[i];
@@ -840,654 +891,262 @@
   }
 
   // =========================================================================
-  // Section 2: Alpine Canvas Animation (Bright Theme)
+  // Section 2: Looping Train Journey Track & Countdown ("Nearness")
   // =========================================================================
 
-  let trackSamples = [];
-  let trackTotalLength = 0;
-  let trainLeadDistance = 0;
-  let alpineStars = [];
-  let trainAnimTime = 0;
-  let isArrived = false;
+  const trainState = {
+    progress: 0.15, // 0 = at gondola (left), 1 = at alpine mountains (right)
+    direction: 1,   // 1 = moving right to mountains, -1 = moving left to gondola
+    pauseTimer: 0,
+    wheelAngle: 0,
+    smokeParticles: [],
+  };
 
-  function initAlpineRailway() {
-    alpineStars = [];
-    const starCount = 65;
-    for (let i = 0; i < starCount; i++) {
-      alpineStars.push({
-        x: Math.random() * width,
-        y: Math.random() * (height * 0.58),
-        r: 0.5 + Math.random() * 1.2,
-        phase: Math.random() * Math.PI * 2,
-        speed: 0.6 + Math.random() * 1.8,
+  function renderTrainTrack(alpha, dt, effectiveRatio) {
+    if (!trainTrackCanvas || !trackCtx) return;
+
+    const w = trackCanvasWidth;
+    const h = trackCanvasHeight;
+
+    trackCtx.clearRect(0, 0, w, h);
+
+    // Speed: starts quite fast at 1.0x, gets slower as slider moves towards 7.0x ("our time")
+    // Base speed: 0.28 trips/sec at 1.0x (~3.5 seconds to cross between gondola & mountains)
+    // At 7.0x: ~0.04 trips/sec (~25 seconds to cross, slow dilated motion)
+    const tripRate = 0.28 / effectiveRatio;
+
+    if (trainState.pauseTimer > 0) {
+      trainState.pauseTimer -= dt;
+    } else {
+      trainState.progress += trainState.direction * tripRate * dt;
+      trainState.wheelAngle += trainState.direction * tripRate * dt * 30;
+
+      if (trainState.progress >= 0.96) {
+        trainState.progress = 0.96;
+        trainState.direction = -1;
+        trainState.pauseTimer = Math.max(0.2, 0.5 / effectiveRatio); // brief breath at mountains
+      } else if (trainState.progress <= 0.04) {
+        trainState.progress = 0.04;
+        trainState.direction = 1;
+        trainState.pauseTimer = Math.max(0.2, 0.5 / effectiveRatio); // brief breath at gondola
+      }
+    }
+
+    const railY = h * 0.64;
+
+    // 1. Ballast Bed
+    trackCtx.fillStyle = 'rgba(226, 232, 240, 0.75)';
+    trackCtx.beginPath();
+    if (trackCtx.roundRect) {
+      trackCtx.roundRect(8, railY - 7, w - 16, 14, 4);
+    } else {
+      trackCtx.rect(8, railY - 7, w - 16, 14);
+    }
+    trackCtx.fill();
+
+    // 2. Wooden Sleepers (Ties)
+    trackCtx.fillStyle = 'rgba(100, 116, 139, 0.35)';
+    for (let x = 14; x <= w - 14; x += 11) {
+      trackCtx.fillRect(x, railY - 6, 2.5, 12);
+    }
+
+    // 3. Double Steel Rails
+    trackCtx.strokeStyle = 'rgba(71, 85, 105, 0.85)';
+    trackCtx.lineWidth = 1.4;
+    trackCtx.beginPath();
+    trackCtx.moveTo(10, railY - 3.5);
+    trackCtx.lineTo(w - 10, railY - 3.5);
+    trackCtx.moveTo(10, railY + 3.5);
+    trackCtx.lineTo(w - 10, railY + 3.5);
+    trackCtx.stroke();
+
+    // Metallic highlight
+    trackCtx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+    trackCtx.lineWidth = 0.6;
+    trackCtx.beginPath();
+    trackCtx.moveTo(10, railY - 4);
+    trackCtx.lineTo(w - 10, railY - 4);
+    trackCtx.stroke();
+
+    // 4. Update & Draw Train Smoke/Puff Particles
+    if (Math.random() < 0.22 && trainState.pauseTimer <= 0) {
+      const emitX = 20 + trainState.progress * (w - 40) + (trainState.direction === 1 ? 12 : -12);
+      trainState.smokeParticles.push({
+        x: emitX,
+        y: railY - 14,
+        vx: -trainState.direction * (0.25 + Math.random() * 0.35),
+        vy: -0.3 - Math.random() * 0.3,
+        r: 1.5 + Math.random() * 1.5,
+        life: 1.0,
       });
     }
 
-    const waypoints = [
-      { x: width * 0.04, y: height * 0.88 },
-      { x: width * 0.22, y: height * 0.82 },
-      { x: width * 0.45, y: height * 0.74 },
-      { x: width * 0.72, y: height * 0.65 },
-      { x: width * 0.36, y: height * 0.49 },
-      { x: width * 0.64, y: height * 0.37 },
-      { x: width * 0.82, y: height * 0.27 },
-      { x: width * 0.94, y: height * 0.20 },
-    ];
-
-    trackSamples = [];
-    let cumDist = 0;
-    const segments = waypoints.length - 1;
-    const stepsPerSegment = 140;
-    let prevPoint = null;
-
-    for (let i = 0; i < segments; i++) {
-      const p0 = waypoints[Math.max(0, i - 1)];
-      const p1 = waypoints[i];
-      const p2 = waypoints[i + 1];
-      const p3 = waypoints[Math.min(waypoints.length - 1, i + 2)];
-
-      for (let s = 0; s < stepsPerSegment; s++) {
-        if (i > 0 && s === 0) continue;
-        const t = s / stepsPerSegment;
-        const t2 = t * t;
-        const t3 = t2 * t;
-
-        const x = 0.5 * (
-          (2 * p1.x) +
-          (-p0.x + p2.x) * t +
-          (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * t2 +
-          (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * t3
-        );
-
-        const y = 0.5 * (
-          (2 * p1.y) +
-          (-p0.y + p2.y) * t +
-          (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * t2 +
-          (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * t3
-        );
-
-        const dx = 0.5 * (
-          (-p0.x + p2.x) +
-          (2 * (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x)) * t +
-          (3 * (-p0.x + 3 * p1.x - 3 * p2.x + p3.x)) * t2
-        );
-
-        const dy = 0.5 * (
-          (-p0.y + p2.y) +
-          (2 * (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y)) * t +
-          (3 * (-p0.y + 3 * p1.y - 3 * p2.y + p3.y)) * t2
-        );
-
-        const angle = Math.atan2(dy, dx);
-
-        if (prevPoint) {
-          const segDist = Math.hypot(x - prevPoint.x, y - prevPoint.y);
-          cumDist += segDist;
-        }
-
-        const point = { x, y, angle, dist: cumDist };
-        trackSamples.push(point);
-        prevPoint = point;
+    for (let i = trainState.smokeParticles.length - 1; i >= 0; i--) {
+      const p = trainState.smokeParticles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.r += 0.08;
+      p.life -= dt * 1.8;
+      if (p.life <= 0) {
+        trainState.smokeParticles.splice(i, 1);
+        continue;
       }
+      trackCtx.fillStyle = `rgba(148, 163, 184, ${p.life * 0.4})`;
+      trackCtx.beginPath();
+      trackCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      trackCtx.fill();
     }
 
-    trackTotalLength = cumDist;
-  }
+    // 5. Draw Articulated Cartoon Train
+    const trainCenterX = 20 + trainState.progress * (w - 40);
+    const dir = trainState.direction; // 1 = right, -1 = left
 
-  function getTrackPoint(dist) {
-    if (trackSamples.length === 0) {
-      return { x: 0, y: 0, angle: 0, nx: 0, ny: 1 };
+    trackCtx.save();
+    trackCtx.translate(trainCenterX, railY);
+    if (dir === -1) {
+      trackCtx.scale(-1, 1);
     }
 
-    let d = dist % trackTotalLength;
-    if (d < 0) d += trackTotalLength;
-
-    let low = 0;
-    let high = trackSamples.length - 1;
-
-    while (low <= high) {
-      const mid = (low + high) >> 1;
-      if (trackSamples[mid].dist < d) {
-        low = mid + 1;
-      } else {
-        high = mid - 1;
-      }
-    }
-
-    const idx1 = Math.max(0, Math.min(trackSamples.length - 1, low - 1));
-    const idx2 = Math.min(trackSamples.length - 1, idx1 + 1);
-    const p1 = trackSamples[idx1];
-    const p2 = trackSamples[idx2];
-    const span = p2.dist - p1.dist;
-    const t = span > 0.0001 ? (d - p1.dist) / span : 0;
-
-    const x = p1.x + (p2.x - p1.x) * t;
-    const y = p1.y + (p2.y - p1.y) * t;
-
-    let dAngle = p2.angle - p1.angle;
-    while (dAngle > Math.PI) dAngle -= Math.PI * 2;
-    while (dAngle < -Math.PI) dAngle += Math.PI * 2;
-    const angle = p1.angle + dAngle * t;
-
-    return {
-      x,
-      y,
-      angle,
-      nx: -Math.sin(angle),
-      ny: Math.cos(angle),
-    };
-  }
-
-  function drawAlpineSkyAndStars(c, w, h, t) {
-    // Crisp, bright Alpine day sky
-    const skyGrad = c.createLinearGradient(0, 0, 0, h * 0.85);
-    skyGrad.addColorStop(0, '#e0f2fe');
-    skyGrad.addColorStop(0.55, '#f0f9ff');
-    skyGrad.addColorStop(1, '#f8fafc');
-    c.fillStyle = skyGrad;
-    c.fillRect(0, 0, w, h);
-
-    // Subtle drifting Alpine light motes
-    for (let i = 0; i < alpineStars.length; i++) {
-      const s = alpineStars[i];
-      const alpha = 0.15 + 0.35 * (0.5 + 0.5 * Math.sin(s.phase + t * s.speed));
-      c.fillStyle = `rgba(56, 189, 248, ${alpha.toFixed(2)})`;
-      c.beginPath();
-      c.arc(s.x, s.y, s.r * 0.9, 0, Math.PI * 2);
-      c.fill();
-    }
-
-    // Warm golden Alpine morning beacon
-    const beaconX = w * 0.86;
-    const beaconY = h * 0.08;
-    const bGlow = 0.55 + 0.3 * Math.sin(t * 2.2);
-    c.fillStyle = `rgba(245, 158, 11, ${bGlow * 0.75})`;
-    c.beginPath();
-    c.arc(beaconX, beaconY, 3, 0, Math.PI * 2);
-    c.fill();
-
-    c.strokeStyle = `rgba(245, 158, 11, ${bGlow * 0.45})`;
-    c.lineWidth = 1;
-    c.beginPath();
-    c.moveTo(beaconX - 8, beaconY);
-    c.lineTo(beaconX + 8, beaconY);
-    c.moveTo(beaconX, beaconY - 8);
-    c.lineTo(beaconX, beaconY + 8);
-    c.stroke();
-  }
-
-  function drawVeniceLagoon(c, w, h, t) {
-    const waterY = h * 0.74;
-    const waterW = w * 0.44;
-
-    const waterGrad = c.createLinearGradient(0, waterY, 0, h);
-    waterGrad.addColorStop(0, 'rgba(186, 230, 253, 0.4)');
-    waterGrad.addColorStop(0.5, 'rgba(125, 211, 252, 0.3)');
-    waterGrad.addColorStop(1, 'rgba(56, 189, 248, 0.2)');
-    c.fillStyle = waterGrad;
-    c.fillRect(0, waterY, waterW, h - waterY);
-
-    c.lineWidth = 1.2;
-    for (let r = 0; r < 7; r++) {
-      const ry = waterY + 16 + r * 16;
-      const rippleWave = Math.sin(t * 1.6 + r * 0.8) * 8;
-      const rAlpha = 0.2 + 0.2 * Math.sin(t * 1.4 + r);
-      c.strokeStyle = `rgba(2, 132, 199, ${rAlpha})`;
-      c.beginPath();
-      c.moveTo(10, ry);
-      c.bezierCurveTo(
-        waterW * 0.25, ry + rippleWave,
-        waterW * 0.60, ry - rippleWave,
-        waterW * 0.90, ry + 2
-      );
-      c.stroke();
-    }
-
-    // Briccole
-    const poleX = w * 0.08;
-    const poleBaseY = waterY + 30;
-    c.save();
-    c.translate(poleX, poleBaseY);
-
-    c.strokeStyle = 'rgba(120, 85, 60, 0.92)';
-    c.lineWidth = 3.5;
-    c.beginPath();
-    c.moveTo(-6, -42);
-    c.lineTo(-4, 18);
-    c.moveTo(0, -48);
-    c.lineTo(0, 18);
-    c.moveTo(6, -40);
-    c.lineTo(4, 18);
-    c.stroke();
-
-    c.strokeStyle = 'rgba(203, 213, 225, 0.85)';
-    c.lineWidth = 2;
-    c.beginPath();
-    c.moveTo(-8, -24);
-    c.lineTo(8, -24);
-    c.moveTo(-8, -14);
-    c.lineTo(8, -14);
-    c.stroke();
-    c.restore();
-
-    // Floating Venetian Gondola Silhouette with Gondolier & Oar
-    const gondolaX = w * 0.15;
-    const gondolaBaseY = waterY + 44;
-    const bobY = Math.sin(t * 1.3) * 2.5;
-
-    c.save();
-    c.translate(gondolaX, gondolaBaseY + bobY);
-
-    c.fillStyle = 'rgba(2, 132, 199, 0.16)';
-    c.beginPath();
-    c.ellipse(10, 12, 42, 6, 0, 0, Math.PI * 2);
-    c.fill();
-
-    c.fillStyle = 'rgba(15, 23, 42, 0.96)';
-    c.beginPath();
-    c.moveTo(-44, -2);
-    c.quadraticCurveTo(-15, 12, 38, 7);
-    c.quadraticCurveTo(46, -1, 52, -12);
-    c.quadraticCurveTo(42, 5, 28, 6);
-    c.quadraticCurveTo(-20, 7, -44, -2);
-    c.closePath();
-    c.fill();
-
-    c.strokeStyle = 'rgba(15, 23, 42, 0.96)';
-    c.lineWidth = 1.5;
-    c.beginPath();
-    c.moveTo(48, 0);
-    c.lineTo(54, -16);
-    c.lineTo(51, -18);
-    c.stroke();
-
-    const gX = -26;
-    const gY = -1;
-
-    c.fillStyle = 'rgba(15, 23, 42, 0.98)';
-    c.beginPath();
-    c.moveTo(gX - 4, gY);
-    c.lineTo(gX - 2, gY - 26);
-    c.lineTo(gX + 5, gY - 26);
-    c.lineTo(gX + 4, gY);
-    c.closePath();
-    c.fill();
-
-    c.beginPath();
-    c.arc(gX + 1, gY - 30, 4, 0, Math.PI * 2);
-    c.fill();
-
-    c.strokeStyle = 'rgba(15, 23, 42, 0.98)';
-    c.lineWidth = 1.4;
-    c.beginPath();
-    c.moveTo(gX - 6, gY - 32);
-    c.lineTo(gX + 8, gY - 32);
-    c.stroke();
-
-    c.strokeStyle = 'rgba(2, 132, 199, 0.95)';
-    c.lineWidth = 1.5;
-    c.beginPath();
-    c.moveTo(gX - 2, gY - 22);
-    c.lineTo(gX + 10, gY - 14);
-    c.lineTo(gX + 24, gY + 12);
-    c.stroke();
-
-    c.restore();
-  }
-
-  function drawAlpineMountains(c, w, h) {
-    c.fillStyle = 'rgba(203, 213, 225, 0.35)';
-    c.beginPath();
-    c.moveTo(w * 0.35, h * 0.65);
-    c.lineTo(w * 0.50, h * 0.28);
-    c.lineTo(w * 0.62, h * 0.38);
-    c.lineTo(w * 0.75, h * 0.22);
-    c.lineTo(w * 0.98, h * 0.32);
-    c.lineTo(w, h * 0.75);
-    c.lineTo(w * 0.35, h * 0.75);
-    c.closePath();
-    c.fill();
-
-    const p1 = { x: w * 0.56, y: h * 0.16, bx1: w * 0.42, bx2: w * 0.70, by: h * 0.52 };
-    drawSingleAlpinePeak(c, p1.x, p1.y, p1.bx1, p1.bx2, p1.by, 0.9);
-
-    const p2 = { x: w * 0.75, y: h * 0.08, bx1: w * 0.58, bx2: w * 0.92, by: h * 0.50 };
-    drawSingleAlpinePeak(c, p2.x, p2.y, p2.bx1, p2.bx2, p2.by, 1.0);
-
-    const p3 = { x: w * 0.92, y: h * 0.12, bx1: w * 0.80, bx2: w * 1.05, by: h * 0.46 };
-    drawSingleAlpinePeak(c, p3.x, p3.y, p3.bx1, p3.bx2, p3.by, 0.95);
-
-    const pines = [
-      { x: w * 0.48, y: h * 0.58, size: 22 },
-      { x: w * 0.51, y: h * 0.61, size: 18 },
-      { x: w * 0.54, y: h * 0.56, size: 24 },
-      { x: w * 0.67, y: h * 0.47, size: 20 },
-      { x: w * 0.70, y: h * 0.49, size: 25 },
-      { x: w * 0.78, y: h * 0.39, size: 22 },
-      { x: w * 0.84, y: h * 0.35, size: 26 },
-      { x: w * 0.88, y: h * 0.31, size: 20 },
-    ];
-
-    for (let i = 0; i < pines.length; i++) {
-      drawAlpinePine(c, pines[i].x, pines[i].y, pines[i].size);
-    }
-
-    drawAlpineTerminalStation(c, w * 0.94, h * 0.20);
-  }
-
-  function drawSingleAlpinePeak(c, apexX, apexY, baseLeftX, baseRightX, baseY) {
-    c.fillStyle = 'rgba(100, 116, 139, 0.45)';
-    c.beginPath();
-    c.moveTo(apexX, apexY);
-    c.lineTo(baseLeftX, baseY);
-    c.lineTo(apexX + (baseRightX - apexX) * 0.12, baseY);
-    c.closePath();
-    c.fill();
-
-    c.fillStyle = 'rgba(148, 163, 184, 0.35)';
-    c.beginPath();
-    c.moveTo(apexX, apexY);
-    c.lineTo(apexX + (baseRightX - apexX) * 0.12, baseY);
-    c.lineTo(baseRightX, baseY);
-    c.closePath();
-    c.fill();
-
-    c.fillStyle = '#ffffff';
-    c.strokeStyle = 'rgba(148, 163, 184, 0.4)';
-    c.lineWidth = 1.0;
-    c.beginPath();
-    c.moveTo(apexX, apexY);
-    c.lineTo(apexX - (apexX - baseLeftX) * 0.32, apexY + (baseY - apexY) * 0.32);
-    c.lineTo(apexX - (apexX - baseLeftX) * 0.18, apexY + (baseY - apexY) * 0.38);
-    c.lineTo(apexX + (baseRightX - apexX) * 0.05, apexY + (baseY - apexY) * 0.44);
-    c.lineTo(apexX + (baseRightX - apexX) * 0.22, apexY + (baseY - apexY) * 0.35);
-    c.lineTo(apexX + (baseRightX - apexX) * 0.34, apexY + (baseY - apexY) * 0.32);
-    c.closePath();
-    c.fill();
-    c.stroke();
-
-    c.strokeStyle = 'rgba(56, 189, 248, 0.75)';
-    c.lineWidth = 1.2;
-    c.beginPath();
-    c.moveTo(apexX, apexY);
-    c.lineTo(apexX + (baseRightX - apexX) * 0.05, apexY + (baseY - apexY) * 0.44);
-    c.stroke();
-  }
-
-  function drawAlpinePine(c, x, y, size) {
-    c.save();
-    c.translate(x, y);
-
-    c.fillStyle = 'rgba(78, 60, 48, 0.9)';
-    c.fillRect(-1.5, 0, 3, size * 0.3);
-
-    c.fillStyle = 'rgba(20, 45, 35, 0.85)';
-    c.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-    c.lineWidth = 0.8;
-
-    for (let tier = 0; tier < 3; tier++) {
-      const tierY = -size * 0.25 * tier;
-      const w = size * 0.55 * (1 - tier * 0.22);
-      const h = size * 0.42;
-
-      c.beginPath();
-      c.moveTo(0, tierY - h);
-      c.lineTo(w, tierY);
-      c.lineTo(-w, tierY);
-      c.closePath();
-      c.fill();
-      c.stroke();
-    }
-
-    c.restore();
-  }
-
-  function drawAlpineTerminalStation(c, x, y) {
-    c.save();
-    c.translate(x, y);
-
-    c.fillStyle = 'rgba(71, 85, 105, 0.95)';
-    c.fillRect(-8, -10, 16, 20);
-
-    c.strokeStyle = 'rgba(239, 68, 68, 0.9)';
-    c.lineWidth = 2;
-    c.beginPath();
-    c.moveTo(-6, -8);
-    c.lineTo(6, 8);
-    c.moveTo(-6, 8);
-    c.lineTo(6, -8);
-    c.stroke();
-
-    c.fillStyle = 'rgba(51, 65, 85, 0.95)';
-    c.beginPath();
-    c.moveTo(-20, -18);
-    c.lineTo(16, -26);
-    c.lineTo(24, -22);
-    c.lineTo(-12, -14);
-    c.closePath();
-    c.fill();
-
-    const lanternGrad = c.createRadialGradient(8, -12, 1, 8, -12, 28);
-    lanternGrad.addColorStop(0, 'rgba(245, 158, 11, 0.95)');
-    lanternGrad.addColorStop(0.4, 'rgba(251, 191, 36, 0.5)');
-    lanternGrad.addColorStop(1, 'rgba(251, 191, 36, 0)');
-
-    c.fillStyle = lanternGrad;
-    c.beginPath();
-    c.arc(8, -12, 28, 0, Math.PI * 2);
-    c.fill();
-
-    c.restore();
-  }
-
-  function drawRailwayTrack(c) {
-    if (trackSamples.length < 2) return;
-
-    c.save();
-    c.beginPath();
-    c.moveTo(trackSamples[0].x, trackSamples[0].y);
-    for (let i = 1; i < trackSamples.length; i++) {
-      c.lineTo(trackSamples[i].x, trackSamples[i].y);
-    }
-    c.strokeStyle = 'rgba(203, 213, 225, 0.75)';
-    c.lineWidth = 14;
-    c.lineCap = 'round';
-    c.lineJoin = 'round';
-    c.stroke();
-
-    c.strokeStyle = 'rgba(100, 116, 139, 0.55)';
-    c.lineWidth = 2.2;
-    for (let d = 0; d < trackTotalLength; d += 11) {
-      const pt = getTrackPoint(d);
-      c.beginPath();
-      c.moveTo(pt.x - pt.nx * 6.5, pt.y - pt.ny * 6.5);
-      c.lineTo(pt.x + pt.nx * 6.5, pt.y + pt.ny * 6.5);
-      c.stroke();
-    }
-
-    c.beginPath();
-    for (let i = 0; i < trackSamples.length; i++) {
-      const p = trackSamples[i];
-      const nx = -Math.sin(p.angle);
-      const ny = Math.cos(p.angle);
-      const rx = p.x + nx * 3.5;
-      const ry = p.y + ny * 3.5;
-      if (i === 0) c.moveTo(rx, ry);
-      else c.lineTo(rx, ry);
-    }
-    c.strokeStyle = 'rgba(51, 65, 85, 0.85)';
-    c.lineWidth = 1.4;
-    c.stroke();
-
-    c.beginPath();
-    for (let i = 0; i < trackSamples.length; i++) {
-      const p = trackSamples[i];
-      const nx = -Math.sin(p.angle);
-      const ny = Math.cos(p.angle);
-      const rx = p.x - nx * 3.5;
-      const ry = p.y - ny * 3.5;
-      if (i === 0) c.moveTo(rx, ry);
-      else c.lineTo(rx, ry);
-    }
-    c.stroke();
-
-    c.strokeStyle = 'rgba(255, 255, 255, 0.9)';
-    c.lineWidth = 0.6;
-    c.stroke();
-
-    c.restore();
-  }
-
-  function drawArticulatedTrain(c, distortionAlpha, dt) {
-    if (trackTotalLength <= 0) return;
-
-    if (isArrived) {
-      trainLeadDistance = trackTotalLength - 28;
+    // --- Coach 2 (Rear) ---
+    trackCtx.fillStyle = '#ffffff';
+    trackCtx.strokeStyle = 'rgba(203, 213, 225, 0.9)';
+    trackCtx.lineWidth = 1;
+    trackCtx.beginPath();
+    if (trackCtx.roundRect) {
+      trackCtx.roundRect(-38, -12, 19, 10, 2);
     } else {
-      const baseTrainSpeed = 38;
-      const trainSpeed = baseTrainSpeed * (1.0 + Math.pow(distortionAlpha, 1.2) * 3.5);
-      trainLeadDistance = (trainLeadDistance + trainSpeed * dt) % trackTotalLength;
+      trackCtx.rect(-38, -12, 19, 10);
     }
+    trackCtx.fill();
+    trackCtx.stroke();
+    // Red accent stripe
+    trackCtx.fillStyle = '#dc2626';
+    trackCtx.fillRect(-38, -5, 19, 2);
+    // Coach 2 Windows
+    trackCtx.fillStyle = 'rgba(254, 240, 138, 0.95)';
+    trackCtx.fillRect(-35, -10, 3.5, 3.5);
+    trackCtx.fillRect(-30, -10, 3.5, 3.5);
+    trackCtx.fillRect(-25, -10, 3.5, 3.5);
+    // Wheels
+    trackCtx.fillStyle = '#334155';
+    trackCtx.beginPath();
+    trackCtx.arc(-34, -1, 1.8, 0, Math.PI * 2);
+    trackCtx.arc(-23, -1, 1.8, 0, Math.PI * 2);
+    trackCtx.fill();
 
-    const dLoco = trainLeadDistance - 16;
-    const dCar1 = trainLeadDistance - 50;
-    const dCar2 = trainLeadDistance - 82;
-    const dCar3 = trainLeadDistance - 114;
+    // Coupler 1-2
+    trackCtx.strokeStyle = '#475569';
+    trackCtx.lineWidth = 1.5;
+    trackCtx.beginPath();
+    trackCtx.moveTo(-19, -6);
+    trackCtx.lineTo(-16, -6);
+    trackCtx.stroke();
 
-    const cars = [
-      { type: 'car', dist: dCar3 },
-      { type: 'car', dist: dCar2 },
-      { type: 'car', dist: dCar1 },
-      { type: 'loco', dist: dLoco },
-    ];
-
-    // Bellows
-    c.strokeStyle = 'rgba(15, 23, 42, 0.95)';
-    c.lineWidth = 5;
-    for (let i = 0; i < cars.length - 1; i++) {
-      const ptA = getTrackPoint(cars[i].dist + 14);
-      const ptB = getTrackPoint(cars[i + 1].dist - (cars[i + 1].type === 'loco' ? 16 : 14));
-      c.beginPath();
-      c.moveTo(ptA.x, ptA.y);
-      c.lineTo(ptB.x, ptB.y);
-      c.stroke();
+    // --- Coach 1 (Middle) ---
+    trackCtx.fillStyle = '#ffffff';
+    trackCtx.strokeStyle = 'rgba(203, 213, 225, 0.9)';
+    trackCtx.lineWidth = 1;
+    trackCtx.beginPath();
+    if (trackCtx.roundRect) {
+      trackCtx.roundRect(-16, -12, 22, 10, 2);
+    } else {
+      trackCtx.rect(-16, -12, 22, 10);
     }
+    trackCtx.fill();
+    trackCtx.stroke();
+    // Red accent stripe
+    trackCtx.fillStyle = '#dc2626';
+    trackCtx.fillRect(-16, -5, 22, 2);
+    // Coach 1 Windows
+    trackCtx.fillStyle = 'rgba(254, 240, 138, 0.95)';
+    trackCtx.fillRect(-13, -10, 4, 3.5);
+    trackCtx.fillRect(-7, -10, 4, 3.5);
+    trackCtx.fillRect(-1, -10, 4, 3.5);
+    // Wheels
+    trackCtx.fillStyle = '#334155';
+    trackCtx.beginPath();
+    trackCtx.arc(-12, -1, 1.8, 0, Math.PI * 2);
+    trackCtx.arc(2, -1, 1.8, 0, Math.PI * 2);
+    trackCtx.fill();
 
-    // Locomotive Headlight Beam
-    const locoPt = getTrackPoint(dLoco);
-    c.save();
-    c.translate(locoPt.x, locoPt.y);
-    c.rotate(locoPt.angle);
+    // Coupler 2-Locomotive
+    trackCtx.strokeStyle = '#475569';
+    trackCtx.lineWidth = 1.5;
+    trackCtx.beginPath();
+    trackCtx.moveTo(6, -6);
+    trackCtx.lineTo(9, -6);
+    trackCtx.stroke();
 
-    const beamGrad = c.createRadialGradient(16, 0, 4, 60, 0, 75);
-    beamGrad.addColorStop(0, 'rgba(245, 158, 11, 0.35)');
-    beamGrad.addColorStop(0.5, 'rgba(245, 158, 11, 0.15)');
-    beamGrad.addColorStop(1, 'rgba(245, 158, 11, 0)');
+    // --- Locomotive (Front Red Bullet) ---
+    trackCtx.fillStyle = '#dc2626';
+    trackCtx.beginPath();
+    trackCtx.moveTo(9, -2);
+    trackCtx.lineTo(9, -13);
+    trackCtx.lineTo(26, -13);
+    trackCtx.quadraticCurveTo(34, -13, 34, -4);
+    trackCtx.lineTo(34, -2);
+    trackCtx.closePath();
+    trackCtx.fill();
+    // Roof & white stripe
+    trackCtx.fillStyle = '#f8fafc';
+    trackCtx.fillRect(9, -14, 18, 1.5);
+    trackCtx.fillRect(9, -6, 24, 1.5);
+    // Windshield
+    trackCtx.fillStyle = '#38bdf8';
+    trackCtx.beginPath();
+    trackCtx.moveTo(25, -11.5);
+    trackCtx.lineTo(31, -11.5);
+    trackCtx.lineTo(32, -7.5);
+    trackCtx.lineTo(25, -7.5);
+    trackCtx.closePath();
+    trackCtx.fill();
+    // Roof Pantograph
+    trackCtx.strokeStyle = '#64748b';
+    trackCtx.lineWidth = 1;
+    trackCtx.beginPath();
+    trackCtx.moveTo(14, -14);
+    trackCtx.lineTo(17, -17);
+    trackCtx.lineTo(20, -14);
+    trackCtx.stroke();
+    // Locomotive Wheels
+    trackCtx.fillStyle = '#1e293b';
+    trackCtx.beginPath();
+    trackCtx.arc(14, -1, 2.0, 0, Math.PI * 2);
+    trackCtx.arc(24, -1, 2.0, 0, Math.PI * 2);
+    trackCtx.arc(30, -1, 2.0, 0, Math.PI * 2);
+    trackCtx.fill();
 
-    c.fillStyle = beamGrad;
-    c.beginPath();
-    c.moveTo(16, -2);
-    c.lineTo(82, -26);
-    c.lineTo(82, 26);
-    c.lineTo(16, 2);
-    c.closePath();
-    c.fill();
-    c.restore();
+    // Headlight cone & beam
+    trackCtx.save();
+    const beamGrad = trackCtx.createLinearGradient(34, -6, 58, -6);
+    beamGrad.addColorStop(0, 'rgba(254, 240, 138, 0.85)');
+    beamGrad.addColorStop(1, 'rgba(254, 240, 138, 0)');
+    trackCtx.fillStyle = beamGrad;
+    trackCtx.beginPath();
+    trackCtx.moveTo(34, -7);
+    trackCtx.lineTo(58, -13);
+    trackCtx.lineTo(58, 2);
+    trackCtx.closePath();
+    trackCtx.fill();
 
-    // Carriages (3, 2, 1)
-    for (let i = 0; i < 3; i++) {
-      const car = cars[i];
-      const pt = getTrackPoint(car.dist);
-      c.save();
-      c.translate(pt.x, pt.y);
-      c.rotate(pt.angle);
+    // Headlight bulb
+    trackCtx.fillStyle = '#ffffff';
+    trackCtx.beginPath();
+    trackCtx.arc(34, -6, 1.8, 0, Math.PI * 2);
+    trackCtx.fill();
+    trackCtx.restore();
 
-      c.fillStyle = 'rgba(0, 0, 0, 0.25)';
-      c.fillRect(-13, -5, 26, 10);
+    // Rear marker light on Coach 2
+    trackCtx.fillStyle = '#ef4444';
+    trackCtx.beginPath();
+    trackCtx.arc(-38, -8, 1.2, 0, Math.PI * 2);
+    trackCtx.fill();
 
-      // Silver-white body with crimson stripe
-      c.fillStyle = 'rgba(248, 250, 252, 0.98)';
-      c.beginPath();
-      c.roundRect(-14, -4.5, 28, 9, 2);
-      c.fill();
-
-      c.fillStyle = 'rgba(225, 29, 72, 0.95)';
-      c.fillRect(-14, -2.5, 28, 5);
-
-      // Windows
-      c.fillStyle = 'rgba(253, 224, 71, 0.95)';
-      c.shadowColor = 'rgba(253, 224, 71, 0.8)';
-      c.shadowBlur = 4;
-      for (let w = 0; w < 4; w++) {
-        const wx = -10 + w * 6.5;
-        c.fillRect(wx, -1.8, 4.2, 3.6);
-      }
-      c.shadowBlur = 0;
-
-      c.fillStyle = 'rgba(51, 65, 85, 0.95)';
-      c.fillRect(-13.5, -4.5, 27, 1.2);
-
-      c.restore();
-    }
-
-    // Locomotive
-    c.save();
-    c.translate(locoPt.x, locoPt.y);
-    c.rotate(locoPt.angle);
-
-    c.fillStyle = 'rgba(225, 29, 72, 0.98)';
-    c.beginPath();
-    c.moveTo(-15, -4.8);
-    c.lineTo(11, -4.8);
-    c.quadraticCurveTo(16, -4, 16, 0);
-    c.quadraticCurveTo(16, 4, 11, 4.8);
-    c.lineTo(-15, 4.8);
-    c.closePath();
-    c.fill();
-
-    c.fillStyle = 'rgba(51, 65, 85, 0.98)';
-    c.fillRect(-14, -3.2, 22, 6.4);
-
-    c.fillStyle = 'rgba(186, 230, 253, 0.9)';
-    c.fillRect(8, -3.5, 4, 7);
-
-    c.strokeStyle = 'rgba(100, 116, 139, 0.85)';
-    c.lineWidth = 1;
-    c.beginPath();
-    c.moveTo(-8, -3);
-    c.lineTo(-5, -6);
-    c.lineTo(-2, -3);
-    c.moveTo(2, -3);
-    c.lineTo(5, -6);
-    c.lineTo(8, -3);
-    c.stroke();
-
-    c.fillStyle = 'rgba(255, 255, 255, 0.98)';
-    c.shadowColor = 'rgba(245, 158, 11, 0.9)';
-    c.shadowBlur = 6;
-    c.beginPath();
-    c.arc(15.5, -2.5, 1.3, 0, Math.PI * 2);
-    c.arc(15.5, 2.5, 1.3, 0, Math.PI * 2);
-    c.arc(14, 0, 1.1, 0, Math.PI * 2);
-    c.fill();
-    c.shadowBlur = 0;
-
-    c.restore();
-  }
-
-  function renderTrainAtmosphere(distortionAlpha, dt = 0.016) {
-    trainCtx.clearRect(0, 0, width, height);
-    trainAnimTime += dt;
-
-    drawAlpineSkyAndStars(trainCtx, width, height, trainAnimTime);
-    drawVeniceLagoon(trainCtx, width, height, trainAnimTime);
-    drawAlpineMountains(trainCtx, width, height);
-    drawRailwayTrack(trainCtx);
-    drawArticulatedTrain(trainCtx, distortionAlpha, dt);
+    trackCtx.restore();
   }
 
   // =========================================================================
-  // Section 2: Reverse Countdown Chronometer
+  // Section 2: Countdown Chronometer ("Nearness")
   // =========================================================================
 
   function updateCountdown(alpha, dt) {
@@ -1504,35 +1163,34 @@
     const effectiveRatio = getEffectiveRatio(alpha);
 
     if (realRemainingMs <= 0) {
-      isArrived = true;
-      arrivalBanner.classList.remove('hidden');
-      countdownView.style.opacity = '0.35';
+      if (arrivalBanner) arrivalBanner.classList.remove('hidden');
+      if (countdownView) countdownView.style.opacity = '0.35';
 
-      countDays.textContent = '000';
-      countHours.textContent = '00';
-      countMinutes.textContent = '00';
-      countSeconds.textContent = '00';
-      countMillis.textContent = '000';
-      countMicros.textContent = '000';
+      if (countYears) countYears.textContent = '00';
+      if (countDays) countDays.textContent = '000';
+      if (countHours) countHours.textContent = '00';
+      if (countMinutes) countMinutes.textContent = '00';
+      if (countSeconds) countSeconds.textContent = '00';
+      if (countMillis) countMillis.textContent = '000';
+      if (countMicros) countMicros.textContent = '000';
       return;
     }
 
-    isArrived = false;
-    arrivalBanner.classList.add('hidden');
-    countdownView.style.opacity = '1.0';
+    if (arrivalBanner) arrivalBanner.classList.add('hidden');
+    if (countdownView) countdownView.style.opacity = '1.0';
 
     const subMsFraction = (performance.now() % 1);
-    const perceivedRemainingMicros = Math.max(0, ((realRemainingMs + subMsFraction) * 1000) / effectiveRatio);
+    const perceivedRemainingMicros = Math.max(0, ((realRemainingMs + subMsFraction) * 1000) * effectiveRatio);
 
     const parts = decomposeMicros(perceivedRemainingMicros);
-    const totalRemainingDays = parts.years * 365 + parts.days;
 
-    countDays.textContent = pad(totalRemainingDays, 3);
-    countHours.textContent = pad(parts.hours, 2);
-    countMinutes.textContent = pad(parts.minutes, 2);
-    countSeconds.textContent = pad(parts.seconds, 2);
-    countMillis.textContent = pad(parts.millis, 3);
-    countMicros.textContent = pad(parts.micros, 3);
+    if (countYears) countYears.textContent = pad(parts.years, 2);
+    if (countDays) countDays.textContent = pad(parts.days, 3);
+    if (countHours) countHours.textContent = pad(parts.hours, 2);
+    if (countMinutes) countMinutes.textContent = pad(parts.minutes, 2);
+    if (countSeconds) countSeconds.textContent = pad(parts.seconds, 2);
+    if (countMillis) countMillis.textContent = pad(parts.millis, 3);
+    if (countMicros) countMicros.textContent = pad(parts.micros, 3);
   }
 
   // =========================================================================
@@ -1583,15 +1241,13 @@
 
     renderAtmosphere(alpha, dt);
     updateCountdown(alpha, dt);
-    renderTrainAtmosphere(alpha, dt);
+    renderTrainTrack(alpha, dt, effectiveRatio);
 
     requestAnimationFrame(mainLoop);
   }
 
   // =========================================================================
   // Event Handlers & User Interaction
-  // =========================================================================
-
   function setSliderValue(val) {
     const clamped = Math.max(0, Math.min(1, parseFloat(val)));
     state.sliderValue = clamped;
