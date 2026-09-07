@@ -84,6 +84,14 @@
   const arrivalBanner = document.getElementById('arrivalBanner');
   const countdownView = document.getElementById('countdownView');
 
+  // Section 2 Controls (Nearness Slider & Presets)
+  const sliderCountdown = document.getElementById('distortionSliderCountdown');
+  const sliderProgressCountdown = document.getElementById('sliderProgressCountdown');
+  const sliderBadgeCountdown = document.getElementById('sliderValueBadgeCountdown');
+  const btnPresetRealCountdown = document.getElementById('btnPresetRealCountdown');
+  const btnPresetWeekCountdown = document.getElementById('btnPresetWeekCountdown');
+  const btnPresetOurCountdown = document.getElementById('btnPresetOurCountdown');
+
   // Canvases
   const farmCanvas = document.getElementById('farmCanvas');
   const ctx = farmCanvas.getContext('2d');
@@ -210,13 +218,22 @@
   }
 
   function updateHeaderAndLabels(alpha, realDays, effectiveRatio) {
-    // Pure numerical factor badge
-    sliderBadge.textContent = `${effectiveRatio.toFixed(1)}×`;
+    const badgeText = `${effectiveRatio.toFixed(1)}×`;
+    if (sliderBadge) sliderBadge.textContent = badgeText;
+    if (sliderBadgeCountdown) sliderBadgeCountdown.textContent = badgeText;
 
-    // Presets Active State
-    btnPresetReal.classList.toggle('active', alpha < 0.25);
-    btnPresetWeek.classList.toggle('active', alpha >= 0.25 && alpha < 0.75);
-    btnPresetOur.classList.toggle('active', alpha >= 0.75);
+    // Presets Active State (both top and bottom cards stay in sync)
+    const isReal = alpha < 0.25;
+    const isWeek = alpha >= 0.25 && alpha < 0.75;
+    const isOur = alpha >= 0.75;
+
+    if (btnPresetReal) btnPresetReal.classList.toggle('active', isReal);
+    if (btnPresetWeek) btnPresetWeek.classList.toggle('active', isWeek);
+    if (btnPresetOur) btnPresetOur.classList.toggle('active', isOur);
+
+    if (btnPresetRealCountdown) btnPresetRealCountdown.classList.toggle('active', isReal);
+    if (btnPresetWeekCountdown) btnPresetWeekCountdown.classList.toggle('active', isWeek);
+    if (btnPresetOurCountdown) btnPresetOurCountdown.classList.toggle('active', isOur);
   }
 
   // =========================================================================
@@ -910,25 +927,23 @@
 
     trackCtx.clearRect(0, 0, w, h);
 
-    // Speed: starts quite fast at 1.0x, gets slower as slider moves towards 7.0x ("our time")
-    // Base speed: 0.28 trips/sec at 1.0x (~3.5 seconds to cross between gondola & mountains)
-    // At 7.0x: ~0.04 trips/sec (~25 seconds to cross, slow dilated motion)
-    const tripRate = 0.28 / effectiveRatio;
+    // Speed: starts fast at 1.0x (~2.2s crossing), slows down as slider moves towards 7.0x (~15.5s crossing)
+    const tripRate = 0.45 / effectiveRatio;
 
     if (trainState.pauseTimer > 0) {
       trainState.pauseTimer -= dt;
     } else {
       trainState.progress += trainState.direction * tripRate * dt;
-      trainState.wheelAngle += trainState.direction * tripRate * dt * 30;
+      trainState.wheelAngle += trainState.direction * tripRate * dt * 32;
 
       if (trainState.progress >= 0.96) {
         trainState.progress = 0.96;
         trainState.direction = -1;
-        trainState.pauseTimer = Math.max(0.2, 0.5 / effectiveRatio); // brief breath at mountains
+        trainState.pauseTimer = 0.25 + 0.03 * (effectiveRatio - 1.0); // brief turnaround at mountains
       } else if (trainState.progress <= 0.04) {
         trainState.progress = 0.04;
         trainState.direction = 1;
-        trainState.pauseTimer = Math.max(0.2, 0.5 / effectiveRatio); // brief breath at gondola
+        trainState.pauseTimer = 0.25 + 0.03 * (effectiveRatio - 1.0); // brief turnaround at gondola
       }
     }
 
@@ -968,14 +983,15 @@
     trackCtx.lineTo(w - 10, railY - 4);
     trackCtx.stroke();
 
-    // 4. Update & Draw Train Smoke/Puff Particles
-    if (Math.random() < 0.22 && trainState.pauseTimer <= 0) {
+    // 4. Update & Draw Train Smoke/Puff Particles (scales with train speed)
+    const smokeRate = Math.min(0.35, 0.08 + 0.24 * (tripRate / 0.45));
+    if (Math.random() < smokeRate && trainState.pauseTimer <= 0) {
       const emitX = 20 + trainState.progress * (w - 40) + (trainState.direction === 1 ? 12 : -12);
       trainState.smokeParticles.push({
         x: emitX,
         y: railY - 14,
-        vx: -trainState.direction * (0.25 + Math.random() * 0.35),
-        vy: -0.3 - Math.random() * 0.3,
+        vx: -trainState.direction * (0.2 + 0.25 * (tripRate / 0.45)),
+        vy: -0.25 - Math.random() * 0.25,
         r: 1.5 + Math.random() * 1.5,
         life: 1.0,
       });
@@ -1251,18 +1267,38 @@
   function setSliderValue(val) {
     const clamped = Math.max(0, Math.min(1, parseFloat(val)));
     state.sliderValue = clamped;
-    slider.value = clamped;
-    sliderProgress.style.width = `${clamped * 100}%`;
+
+    if (slider) {
+      slider.value = clamped;
+      if (sliderProgress) sliderProgress.style.width = `${clamped * 100}%`;
+    }
+    if (sliderCountdown) {
+      sliderCountdown.value = clamped;
+      if (sliderProgressCountdown) sliderProgressCountdown.style.width = `${clamped * 100}%`;
+    }
   }
 
-  slider.addEventListener('input', (e) => {
-    setSliderValue(e.target.value);
-  });
+  if (slider) {
+    slider.addEventListener('input', (e) => {
+      setSliderValue(e.target.value);
+    });
+  }
 
-  // Presets (Pure Numerical Factors)
-  btnPresetReal.addEventListener('click', () => setSliderValue(0));
-  btnPresetWeek.addEventListener('click', () => setSliderValue(0.5));
-  btnPresetOur.addEventListener('click', () => setSliderValue(1.0));
+  if (sliderCountdown) {
+    sliderCountdown.addEventListener('input', (e) => {
+      setSliderValue(e.target.value);
+    });
+  }
+
+  // Presets (Pure Numerical Factors) - Section 1
+  if (btnPresetReal) btnPresetReal.addEventListener('click', () => setSliderValue(0));
+  if (btnPresetWeek) btnPresetWeek.addEventListener('click', () => setSliderValue(0.5));
+  if (btnPresetOur) btnPresetOur.addEventListener('click', () => setSliderValue(1.0));
+
+  // Presets (Pure Numerical Factors) - Section 2
+  if (btnPresetRealCountdown) btnPresetRealCountdown.addEventListener('click', () => setSliderValue(0));
+  if (btnPresetWeekCountdown) btnPresetWeekCountdown.addEventListener('click', () => setSliderValue(0.5));
+  if (btnPresetOurCountdown) btnPresetOurCountdown.addEventListener('click', () => setSliderValue(1.0));
 
   // Toggle View Mode (Chronological vs Base-10 Bins)
   btnToggleView.addEventListener('click', () => {

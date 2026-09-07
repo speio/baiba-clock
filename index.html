@@ -249,6 +249,42 @@
         </div>
       </section>
 
+      <!-- Minimal Dilation Slider Card for Nearness -->
+      <section class="controls-card">
+        <div class="slider-header-row">
+          <div class="slider-title-col">
+            <div class="slider-value-badge" id="sliderValueBadgeCountdown">1.0×</div>
+          </div>
+        </div>
+
+        <!-- Main Slider -->
+        <div class="slider-track-container">
+          <div class="slider-ticks">
+            <span class="tick-mark left">1.0×</span>
+            <span class="tick-mark mid">2.6×</span>
+            <span class="tick-mark right">7.0×</span>
+          </div>
+          <input 
+            type="range" 
+            id="distortionSliderCountdown" 
+            min="0" 
+            max="1" 
+            step="0.001" 
+            value="0" 
+            class="custom-slider"
+            aria-label="Nearness Dilation Slider"
+          >
+          <div class="slider-progress" id="sliderProgressCountdown"></div>
+        </div>
+
+        <!-- Preset Buttons (Pure Numerical Factors) -->
+        <div class="presets-row">
+          <button class="btn-preset active" id="btnPresetRealCountdown" data-val="0">1.0×</button>
+          <button class="btn-preset" id="btnPresetWeekCountdown" data-val="0.5">2.6×</button>
+          <button class="btn-preset" id="btnPresetOurCountdown" data-val="1.0">7.0×</button>
+        </div>
+      </section>
+
       <!-- Scroll Back to Section 1 -->
       <div class="scroll-prompt-row back-to-top-row">
         <a href="#sectionSinceWeMet" class="scroll-prompt-btn return-btn" aria-label="Return to top">
