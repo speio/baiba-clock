@@ -5,10 +5,11 @@
  * Math:
  * - Origin: August 26, 2026 00:00:00 Local
  * - Dilation Anchors:
- *     7 real days  => 1 subjective year  (365.2425 days, ~52.18x speed)
- *     9 real days  => 20 subjective years (7304.85 days, ~811.65x speed)
- * - Power-law non-linear slider blending between Objective Reality and "Our Time".
- * - Surreal animated canvas with abstract Soviet farm flecks, goats, 2 dogs, 4 cats.
+ *     Objective Reality => 1.0x (1 real day = 1 day)
+ *     Day into Week     => 7.0x (1 real day = 1 subjective week)
+ *     Our Time          => ~52.18x (1 real week = 1 subjective year)
+ * - Power-law slider blending between Objective Reality, Week, and "Our Time".
+ * - Surreal animated canvas with abstract Soviet farm flecks, goats, 2 dogs, 4 cats, and seasonal trees.
  */
 
 (function() {
@@ -21,11 +22,9 @@
   const SECONDS_PER_YEAR = DAYS_PER_YEAR * SECONDS_PER_DAY; // ~31,556,952 s
 
   // Anchor Ratios
-  const RATIO_7D = DAYS_PER_YEAR / 7; // ~52.1775
-  const RATIO_9D = (20 * DAYS_PER_YEAR) / 9; // ~811.65
-
-  // Power law exponent gamma: (9/7)^(gamma - 1) = RATIO_9D / RATIO_7D => gamma - 1 ≈ 10.92
-  const GAMMA_MINUS_ONE = Math.log(RATIO_9D / RATIO_7D) / Math.log(9 / 7);
+  const RATIO_REAL = 1.0;
+  const RATIO_MID = 7.0; // 1 real day = 1 subjective week (7.0x)
+  const RATIO_OUR_TIME = DAYS_PER_YEAR / 7; // ~52.1775 (1 real week = 1 subjective year)
 
   // State
   const state = {
@@ -85,21 +84,23 @@
   // =========================================================================
 
   /**
-   * Calculates the target "Our Time" ratio for a given elapsed real time in days.
-   * Smooth continuous curve anchored at 7d => 1yr and 9d => 20yr.
+   * Calculates the target ratio for a given slider alpha in [0, 1].
+   * Smooth continuous power law:
+   * - alpha = 0.0 => 1.0x (Objective Reality)
+   * - alpha = 0.5 => 7.0x (1 Day = 1 Week)
+   * - alpha = 1.0 => ~52.18x (1 Week = 1 Year, "Our Time")
    */
-  function getOurTimeMultiplier(realDays) {
-    if (realDays <= 0) return 1.0;
+  function getEffectiveRatio(alpha) {
+    if (alpha <= 0.0001) return 1.0;
+    if (alpha >= 0.9999) return RATIO_OUR_TIME;
 
-    // Up to 7 days, subjective pace is at least RATIO_7D (~52.18x)
-    if (realDays <= 7.0) {
-      // Smoothly ramps up from ~52.18x baseline relationship intensity
-      return RATIO_7D;
+    if (alpha <= 0.5) {
+      // Interpolate smoothly from 1.0x to 7.0x over [0, 0.5]
+      return Math.pow(RATIO_MID, alpha * 2);
+    } else {
+      // Interpolate smoothly from 7.0x to 52.18x over [0.5, 1.0]
+      return RATIO_MID * Math.pow(RATIO_OUR_TIME / RATIO_MID, (alpha - 0.5) * 2);
     }
-
-    // Between 7 days and beyond: surges via power law to hit RATIO_9D at exactly day 9
-    const ratio = Math.pow(realDays / 7.0, GAMMA_MINUS_ONE) * RATIO_7D;
-    return ratio;
   }
 
   /**
@@ -109,12 +110,7 @@
     if (realMicros <= 0) return 0;
     if (alpha <= 0.0001) return realMicros;
 
-    const realDays = realMicros / (SECONDS_PER_DAY * 1e6);
-    const ourRatio = getOurTimeMultiplier(realDays);
-
-    // Apply non-linear power law blend between 1.0 and ourRatio
-    // effectiveRatio = (ourRatio)^alpha
-    const effectiveRatio = Math.pow(ourRatio, alpha);
+    const effectiveRatio = getEffectiveRatio(alpha);
     return realMicros * effectiveRatio;
   }
 
@@ -235,17 +231,17 @@
       clockTitle.textContent = 'REAL TIME';
       dilationStatus.textContent = '1.0000× — Objective Reality';
       clockTitle.style.color = '#ffffff';
-    } else if (alpha < 0.45) {
+    } else if (alpha < 0.35) {
       clockTitle.textContent = 'PERCEPTUAL DRIFT';
       dilationStatus.textContent = `${effectiveRatio.toFixed(2)}× — Subtle Dilation`;
       clockTitle.style.color = '#e2e8f0';
     } else if (alpha < 0.85) {
-      clockTitle.textContent = 'DEEP DILATION';
-      dilationStatus.textContent = `${effectiveRatio.toFixed(1)}× — 1 Week = 1 Year Horizon`;
+      clockTitle.textContent = 'DAY INTO WEEK';
+      dilationStatus.textContent = `${effectiveRatio.toFixed(1)}× — 1 Day = 1 Week Horizon`;
       clockTitle.style.color = '#cbd5e1';
     } else {
       clockTitle.textContent = 'OUR TIME';
-      dilationStatus.textContent = `${effectiveRatio.toFixed(1)}× — 9 Days = 20 Years Horizon`;
+      dilationStatus.textContent = `${effectiveRatio.toFixed(1)}× — 1 Week = 1 Year Horizon`;
       clockTitle.style.color = '#ffffff';
     }
 
@@ -254,13 +250,13 @@
     sliderBadge.textContent = `${pct}% (${effectiveRatio.toFixed(1)}×)`;
 
     // Animal Speed display
-    const animalSpeed = 1.0 + Math.pow(alpha, 1.6) * 6.5;
+    const animalSpeed = 1.0 + Math.pow(alpha, 1.4) * 2.8;
     animalSpeedDisplay.textContent = `${animalSpeed.toFixed(2)}×`;
 
     // Presets Active State
-    btnPresetReal.classList.toggle('active', alpha < 0.15);
-    btnPresetWeek.classList.toggle('active', alpha >= 0.15 && alpha < 0.8);
-    btnPresetOur.classList.toggle('active', alpha >= 0.8);
+    btnPresetReal.classList.toggle('active', alpha < 0.25);
+    btnPresetWeek.classList.toggle('active', alpha >= 0.25 && alpha < 0.75);
+    btnPresetOur.classList.toggle('active', alpha >= 0.75);
   }
 
   // =========================================================================
@@ -278,6 +274,10 @@
     ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
   }
   window.addEventListener('resize', resizeCanvas);
+
+  // Continuous animation phase state (prevents stuttering during speed changes)
+  let horizonPhase = 0;
+  let animTime = 0;
 
   // 1. Rural Soviet Farm Ambient Flecks (Rye chaff, wheat awns, birch motes)
   const FLECKS_COUNT = 55;
@@ -583,7 +583,7 @@
       this.season = (this.season + baseCycleRate * seasonalSpeedMultiplier * dt) % 1.0;
     }
 
-    draw(ctx, groundX, groundY, distortionAlpha, timeNow) {
+    draw(ctx, groundX, groundY, distortionAlpha, animTime) {
       const s = this.season;
 
       // Seasonal Phases:
@@ -638,7 +638,7 @@
       }
 
       const currentHeight = this.maxHeight * Math.max(0.05, growthProgress);
-      const sway = Math.sin(timeNow * 0.0018 + this.swayPhase) * (5 + distortionAlpha * 5);
+      const sway = Math.sin(animTime * 1.8 + this.swayPhase) * (5 + distortionAlpha * 5);
 
       ctx.save();
       ctx.translate(groundX, groundY);
@@ -683,7 +683,7 @@
         const by = (1 - tFrac) * (1 - tFrac) * 0 + 2 * (1 - tFrac) * tFrac * ctrlY + tFrac * tFrac * topY;
 
         const branchLen = br.lengthRatio * currentHeight;
-        const bSway = Math.sin(timeNow * 0.0022 + this.swayPhase + i) * 3;
+        const bSway = Math.sin(animTime * 2.2 + this.swayPhase + i) * 3;
         const endX = bx + Math.sin(br.angle) * branchLen + bSway;
         const endY = by - Math.cos(br.angle) * branchLen;
 
@@ -705,7 +705,7 @@
         // Draw Foliage Nodes if leaves exist
         if (leafDensity > 0.02) {
           ctx.fillStyle = leafColor;
-          const leafScale = leafDensity * (0.85 + Math.sin(timeNow * 0.003 + i) * 0.15);
+          const leafScale = leafDensity * (0.85 + Math.sin(animTime * 3.0 + i) * 0.15);
 
           // Leaf cluster at branch tip
           ctx.beginPath();
@@ -754,7 +754,7 @@
       this.season = (this.season + baseCycleRate * seasonalSpeedMultiplier * dt) % 1.0;
     }
 
-    draw(ctx, groundX, groundY, distortionAlpha, timeNow) {
+    draw(ctx, groundX, groundY, distortionAlpha, animTime) {
       const s = this.season;
 
       // Spring (0.00-0.25): Sprouting shoot upward
@@ -797,7 +797,7 @@
       }
 
       const h = this.maxHeight * Math.max(0.08, growth);
-      const sway = Math.sin(timeNow * 0.0025 + this.swayPhase) * (this.archDirection * 8 + distortionAlpha * 6);
+      const sway = Math.sin(animTime * 2.5 + this.swayPhase) * (this.archDirection * 8 + distortionAlpha * 6);
 
       ctx.save();
       ctx.translate(groundX, groundY);
@@ -864,18 +864,22 @@
   function renderAtmosphere(distortionAlpha, dt = 0.016) {
     ctx.clearRect(0, 0, width, height);
 
-    // Speed multiplier scales with slider
-    const animalSpeed = 1.0 + Math.pow(distortionAlpha, 1.6) * 6.5;
-    // Seasonal multiplier: 1x at Real Time -> up to ~36x at Our Time
-    const seasonalSpeed = 1.0 + Math.pow(distortionAlpha, 1.6) * 35.0;
-    const timeNow = Date.now();
+    // Speed multiplier scales gracefully with slider
+    const animalSpeed = 1.0 + Math.pow(distortionAlpha, 1.4) * 2.8;
+    // Seasonal multiplier: 1x at Real Time -> up to ~18x at Our Time
+    const seasonalSpeed = 1.0 + Math.pow(distortionAlpha, 1.4) * 17.0;
+
+    // Smooth continuous time and wave phase (completely eliminates tree and scenery stutter)
+    animTime += dt;
+    horizonPhase += dt * 0.5 * animalSpeed;
+
     const horizonY = height * 0.72;
 
     // 1. Draw subtle abstract Soviet farm nature flecks
     for (let i = 0; i < flecks.length; i++) {
       const f = flecks[i];
-      f.x += f.vx * (1.0 + distortionAlpha * 2.0);
-      f.y += f.vy * (1.0 + distortionAlpha * 1.5);
+      f.x += f.vx * (1.0 + distortionAlpha * 1.5);
+      f.y += f.vy * (1.0 + distortionAlpha * 1.2);
       f.angle += f.rotationSpeed;
 
       if (f.x > width + 20) f.x = -20;
@@ -897,26 +901,26 @@
       ctx.restore();
     }
 
-    // 2. Draw surreal rolling pasture horizon lines (soft minimal hairlines)
+    // 2. Draw surreal rolling pasture horizon lines (using continuous horizonPhase)
     ctx.save();
     ctx.strokeStyle = `rgba(255, 255, 255, ${0.04 + distortionAlpha * 0.05})`;
     ctx.lineWidth = 1.0;
     ctx.beginPath();
     ctx.moveTo(0, horizonY);
     for (let x = 0; x <= width; x += 40) {
-      const dy = Math.sin(x * 0.003 + timeNow * 0.0004 * animalSpeed) * 12;
+      const dy = Math.sin(x * 0.003 + horizonPhase) * 12;
       ctx.lineTo(x, horizonY + dy);
     }
     ctx.stroke();
     ctx.restore();
 
-    // 3. Update & render Seasonal Trees (rooted on the pasture horizon)
+    // 3. Update & render Seasonal Trees (rooted on continuous pasture horizon)
     for (let i = 0; i < surrealTrees.length; i++) {
       const tree = surrealTrees[i];
       tree.update(dt, seasonalSpeed);
       const treeX = width * tree.xRatio;
-      const dy = Math.sin(treeX * 0.003 + timeNow * 0.0004 * animalSpeed) * 12;
-      tree.draw(ctx, treeX, horizonY + dy, distortionAlpha, timeNow);
+      const dy = Math.sin(treeX * 0.003 + horizonPhase) * 12;
+      tree.draw(ctx, treeX, horizonY + dy, distortionAlpha, animTime);
     }
 
     // 4. Update & render Seasonal Meadow Plants & Rye
@@ -924,15 +928,15 @@
       const plant = surrealPlants[i];
       plant.update(dt, seasonalSpeed);
       const plantX = width * plant.xRatio;
-      const dy = Math.sin(plantX * 0.003 + timeNow * 0.0004 * animalSpeed) * 12;
-      plant.draw(ctx, plantX, horizonY + dy + 4, distortionAlpha, timeNow);
+      const dy = Math.sin(plantX * 0.003 + horizonPhase) * 12;
+      plant.draw(ctx, plantX, horizonY + dy + 4, distortionAlpha, animTime);
     }
 
     // 5. Update & render Falling/Drifting Leaves
     for (let i = fallingLeaves.length - 1; i >= 0; i--) {
       const leaf = fallingLeaves[i];
-      leaf.x += leaf.vx * (1.0 + distortionAlpha * 2.5);
-      leaf.y += leaf.vy + Math.sin(timeNow * 0.004 + leaf.angle) * 0.6;
+      leaf.x += leaf.vx * (1.0 + distortionAlpha * 2.0);
+      leaf.y += leaf.vy + Math.sin(animTime * 4.0 + leaf.angle) * 0.6;
       leaf.angle += leaf.vAngle;
       leaf.life -= leaf.decay * (1.0 + distortionAlpha * 1.5);
 
