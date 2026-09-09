@@ -270,24 +270,28 @@
   let trackCanvasHeight = 48;
 
   function resizeCanvases() {
-    width = window.innerWidth;
-    height = window.innerHeight;
+    try {
+      width = window.innerWidth || document.documentElement.clientWidth || 1000;
+      height = window.innerHeight || document.documentElement.clientHeight || 800;
 
-    farmCanvas.width = width * window.devicePixelRatio;
-    farmCanvas.height = height * window.devicePixelRatio;
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      if (farmCanvas && ctx) {
+        farmCanvas.width = width * window.devicePixelRatio;
+        farmCanvas.height = height * window.devicePixelRatio;
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      }
 
-    if (trainTrackCanvas && trainTrackCanvas.parentElement) {
-      const rect = trainTrackCanvas.parentElement.getBoundingClientRect();
-      trackCanvasWidth = Math.max(200, rect.width);
-      trackCanvasHeight = 48;
-      trainTrackCanvas.width = trackCanvasWidth * window.devicePixelRatio;
-      trainTrackCanvas.height = trackCanvasHeight * window.devicePixelRatio;
-      if (trackCtx) {
+      if (trainTrackCanvas && trainTrackCanvas.parentElement && trackCtx) {
+        const rect = trainTrackCanvas.parentElement.getBoundingClientRect();
+        trackCanvasWidth = Math.max(200, (rect && rect.width) ? rect.width : 600);
+        trackCanvasHeight = 48;
+        trainTrackCanvas.width = trackCanvasWidth * window.devicePixelRatio;
+        trainTrackCanvas.height = trackCanvasHeight * window.devicePixelRatio;
         trackCtx.setTransform(1, 0, 0, 1, 0, 0);
         trackCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
       }
+    } catch (e) {
+      console.error('Error in resizeCanvases:', e);
     }
   }
   window.addEventListener('resize', resizeCanvases);
@@ -825,6 +829,8 @@
   ];
 
   function renderAtmosphere(distortionAlpha, dt = 0.016) {
+    if (!farmCanvas || !ctx) return;
+
     // 1. Luminous Daylight Sky Gradient
     const skyGrad = ctx.createLinearGradient(0, 0, 0, height);
     skyGrad.addColorStop(0, '#f8fafc');
@@ -1228,53 +1234,57 @@
   // =========================================================================
 
   function mainLoop(now) {
-    const dt = (now - state.lastFramePerf) / 1000;
-    state.lastFramePerf = now;
+    try {
+      const dt = (now - state.lastFramePerf) / 1000;
+      state.lastFramePerf = now;
 
-    let refNowMs;
-    if (state.simulatedDays !== null) {
-      refNowMs = INKLING_DATE.getTime() + (state.simulatedDays * SECONDS_PER_DAY * 1000);
-    } else if (state.isPaused) {
-      refNowMs = INKLING_DATE.getTime() + (state.pausedTimeMicros / 1000);
-    } else {
-      refNowMs = Date.now();
+      let refNowMs;
+      if (state.simulatedDays !== null) {
+        refNowMs = INKLING_DATE.getTime() + (state.simulatedDays * SECONDS_PER_DAY * 1000);
+      } else if (state.isPaused) {
+        refNowMs = INKLING_DATE.getTime() + (state.pausedTimeMicros / 1000);
+      } else {
+        refNowMs = Date.now();
+      }
+
+      const subMsFraction = (performance.now() % 1);
+      const alpha = state.sliderValue;
+      const effectiveRatio = getEffectiveRatio(alpha);
+
+      // 1. First Inkling (anchored to Aug 26, 2026 00:00:00)
+      const elapsedInklingMs = Math.max(0, refNowMs - INKLING_DATE.getTime());
+      const perceivedInklingMicros = (elapsedInklingMs + subMsFraction) * 1000 * effectiveRatio;
+      const partsInkling = decomposeMicros(perceivedInklingMicros);
+
+      if (valYearsInkling) valYearsInkling.textContent = pad(partsInkling.years, 2);
+      if (valDaysInkling) valDaysInkling.textContent = pad(partsInkling.days, 3);
+      if (valHoursInkling) valHoursInkling.textContent = pad(partsInkling.hours, 2);
+      if (valMinutesInkling) valMinutesInkling.textContent = pad(partsInkling.minutes, 2);
+      if (valSecondsInkling) valSecondsInkling.textContent = pad(partsInkling.seconds, 2);
+      if (valMillisInkling) valMillisInkling.textContent = pad(partsInkling.millis, 3);
+      if (valMicrosInkling) valMicrosInkling.textContent = pad(partsInkling.micros, 3);
+
+      // 2. First Brush (anchored to Sep 1, 2026 19:20:00)
+      const elapsedBrushMs = Math.max(0, refNowMs - BRUSH_DATE.getTime());
+      const perceivedBrushMicros = (elapsedBrushMs + subMsFraction) * 1000 * effectiveRatio;
+      const partsBrush = decomposeMicros(perceivedBrushMicros);
+
+      if (valYearsBrush) valYearsBrush.textContent = pad(partsBrush.years, 2);
+      if (valDaysBrush) valDaysBrush.textContent = pad(partsBrush.days, 3);
+      if (valHoursBrush) valHoursBrush.textContent = pad(partsBrush.hours, 2);
+      if (valMinutesBrush) valMinutesBrush.textContent = pad(partsBrush.minutes, 2);
+      if (valSecondsBrush) valSecondsBrush.textContent = pad(partsBrush.seconds, 2);
+      if (valMillisBrush) valMillisBrush.textContent = pad(partsBrush.millis, 3);
+      if (valMicrosBrush) valMicrosBrush.textContent = pad(partsBrush.micros, 3);
+
+      updateHeaderAndLabels(alpha, effectiveRatio);
+
+      renderAtmosphere(alpha, dt);
+      updateCountdown(alpha, dt, refNowMs);
+      renderTrainTrack(alpha, dt, effectiveRatio);
+    } catch (err) {
+      console.error('Error in mainLoop frame:', err);
     }
-
-    const subMsFraction = (performance.now() % 1);
-    const alpha = state.sliderValue;
-    const effectiveRatio = getEffectiveRatio(alpha);
-
-    // 1. First Inkling (anchored to Aug 26, 2026 00:00:00)
-    const elapsedInklingMs = Math.max(0, refNowMs - INKLING_DATE.getTime());
-    const perceivedInklingMicros = (elapsedInklingMs + subMsFraction) * 1000 * effectiveRatio;
-    const partsInkling = decomposeMicros(perceivedInklingMicros);
-
-    if (valYearsInkling) valYearsInkling.textContent = pad(partsInkling.years, 2);
-    if (valDaysInkling) valDaysInkling.textContent = pad(partsInkling.days, 3);
-    if (valHoursInkling) valHoursInkling.textContent = pad(partsInkling.hours, 2);
-    if (valMinutesInkling) valMinutesInkling.textContent = pad(partsInkling.minutes, 2);
-    if (valSecondsInkling) valSecondsInkling.textContent = pad(partsInkling.seconds, 2);
-    if (valMillisInkling) valMillisInkling.textContent = pad(partsInkling.millis, 3);
-    if (valMicrosInkling) valMicrosInkling.textContent = pad(partsInkling.micros, 3);
-
-    // 2. First Brush (anchored to Sep 1, 2026 19:20:00)
-    const elapsedBrushMs = Math.max(0, refNowMs - BRUSH_DATE.getTime());
-    const perceivedBrushMicros = (elapsedBrushMs + subMsFraction) * 1000 * effectiveRatio;
-    const partsBrush = decomposeMicros(perceivedBrushMicros);
-
-    if (valYearsBrush) valYearsBrush.textContent = pad(partsBrush.years, 2);
-    if (valDaysBrush) valDaysBrush.textContent = pad(partsBrush.days, 3);
-    if (valHoursBrush) valHoursBrush.textContent = pad(partsBrush.hours, 2);
-    if (valMinutesBrush) valMinutesBrush.textContent = pad(partsBrush.minutes, 2);
-    if (valSecondsBrush) valSecondsBrush.textContent = pad(partsBrush.seconds, 2);
-    if (valMillisBrush) valMillisBrush.textContent = pad(partsBrush.millis, 3);
-    if (valMicrosBrush) valMicrosBrush.textContent = pad(partsBrush.micros, 3);
-
-    updateHeaderAndLabels(alpha, effectiveRatio);
-
-    renderAtmosphere(alpha, dt);
-    updateCountdown(alpha, dt, refNowMs);
-    renderTrainTrack(alpha, dt, effectiveRatio);
 
     requestAnimationFrame(mainLoop);
   }
