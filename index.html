@@ -3,9 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>First brush</title>
+  <title>Baiba Clock</title>
   <meta name="description" content="Relativistic chronometer anchored to August 26, 2026.">
-  <link rel="stylesheet" href="style.css?v=3.2">
+  <link rel="stylesheet" href="style.css?v=4.0">
+  <style>
+    .clock-view,
+    #chronoViewInkling,
+    #chronoViewBrush,
+    #chronoView,
+    #countdownView {
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: baseline !important;
+      justify-content: center !important;
+      flex-wrap: nowrap !important;
+      width: 100% !important;
+    }
+    .unit-group {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      flex: 0 0 auto !important;
+    }
+    .unit-separator {
+      display: inline-block !important;
+      flex: 0 0 auto !important;
+      user-select: none !important;
+    }
+  </style>
 </head>
 <body>
   <!-- Ambient Background Canvas -->
@@ -32,7 +57,7 @@
         <div class="glass-reflection"></div>
         
         <!-- Primary Display: Chronological Breakdown -->
-        <div id="chronoViewInkling" class="clock-view active">
+        <div id="chronoViewInkling" class="clock-view active" style="display: flex !important; flex-direction: row !important; align-items: baseline !important; justify-content: center !important; flex-wrap: nowrap !important;">
           <div class="unit-group" id="unitYearsInkling">
             <div class="digit-value" id="valYearsInkling">00</div>
             <div class="unit-label">YEARS</div>
@@ -151,7 +176,7 @@
         <div class="glass-reflection"></div>
         
         <!-- Primary Display: Chronological Breakdown -->
-        <div id="chronoViewBrush" class="clock-view active">
+        <div id="chronoViewBrush" class="clock-view active" style="display: flex !important; flex-direction: row !important; align-items: baseline !important; justify-content: center !important; flex-wrap: nowrap !important;">
           <div class="unit-group" id="unitYearsBrush">
             <div class="digit-value" id="valYearsBrush">00</div>
             <div class="unit-label">YEARS</div>
@@ -298,7 +323,7 @@
         </div>
 
         <!-- Identical 7-Unit Breakdown Counting Down -->
-        <div id="countdownView" class="clock-view active">
+        <div id="countdownView" class="clock-view active" style="display: flex !important; flex-direction: row !important; align-items: baseline !important; justify-content: center !important; flex-wrap: nowrap !important;">
           <div class="unit-group" id="countYearsGroup">
             <div class="digit-value" id="countYears">00</div>
             <div class="unit-label">YEARS</div>
@@ -418,6 +443,6 @@
     </div>
   </main>
 
-  <script src="app.js?v=3.2"></script>
+  <script src="app.js?v=4.0"></script>
 </body>
 </html>
