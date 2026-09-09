@@ -683,7 +683,7 @@ body {
   .title-header {
     font-size: 1.3rem;
   }
-  #chronoView, #countdownView {
+  #chronoViewInkling, #chronoViewBrush, #chronoView, #countdownView {
     flex-wrap: wrap;
     gap: 8px;
   }
@@ -694,3 +694,204 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   Three Curated Themes: Blonde, Magenta/Pink, Light Blue
+   Maximum contrast, legible typography, and luminous frosted glass cards
+   ========================================================================== */
+
+/* 1. Blonde Theme — First Inkling */
+.theme-blonde .top-header .meta-value {
+  color: #78350f;
+  font-weight: 500;
+}
+.theme-blonde .title-header {
+  color: #292524;
+}
+.card-blonde {
+  background: linear-gradient(145deg, rgba(254, 252, 232, 0.76) 0%, rgba(254, 243, 199, 0.65) 100%);
+  border: 1.5px solid rgba(217, 119, 6, 0.40);
+  box-shadow: 0 20px 45px -12px rgba(180, 83, 9, 0.12), 0 4px 16px rgba(245, 158, 11, 0.05);
+}
+.card-blonde .digit-value {
+  color: #1c1917;
+  font-weight: 300;
+}
+.card-blonde .unit-label {
+  color: #78350f;
+  font-weight: 600;
+}
+.card-blonde .unit-separator {
+  color: #b45309;
+}
+.card-blonde .unit-group.sub-second .digit-value {
+  color: #451a03;
+}
+.theme-blonde .slider-value-badge {
+  background: #ffffff;
+  border-color: rgba(217, 119, 6, 0.5);
+  color: #78350f;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.12);
+}
+.theme-blonde .custom-slider::-webkit-slider-thumb {
+  border-color: #d97706;
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.35);
+}
+.theme-blonde .slider-progress {
+  background: #f59e0b;
+}
+.theme-blonde .btn-preset {
+  background: rgba(254, 249, 231, 0.88);
+  border-color: rgba(245, 158, 11, 0.40);
+  color: #78350f;
+  font-weight: 500;
+}
+.theme-blonde .btn-preset:hover {
+  background: #ffffff;
+  border-color: #d97706;
+  color: #451a03;
+}
+.theme-blonde .btn-preset.active {
+  background: #fef3c7;
+  border-color: #d97706;
+  color: #451a03;
+  font-weight: 600;
+  box-shadow: 0 2px 10px rgba(217, 119, 6, 0.18);
+}
+.theme-blonde .scroll-prompt-btn {
+  background: rgba(254, 252, 232, 0.85);
+  border-color: rgba(217, 119, 6, 0.4);
+  color: #b45309;
+}
+
+/* 2. Magenta / Pink Theme — First Brush */
+.theme-magenta .top-header .meta-value {
+  color: #831843;
+  font-weight: 500;
+}
+.theme-magenta .title-header {
+  color: #1e1022;
+}
+.card-magenta {
+  background: linear-gradient(145deg, rgba(253, 238, 248, 0.76) 0%, rgba(251, 217, 237, 0.65) 100%);
+  border: 1.5px solid rgba(219, 39, 119, 0.40);
+  box-shadow: 0 20px 45px -12px rgba(190, 24, 93, 0.12), 0 4px 16px rgba(236, 72, 153, 0.05);
+}
+.card-magenta .digit-value {
+  color: #1a081f;
+  font-weight: 300;
+}
+.card-magenta .unit-label {
+  color: #831843;
+  font-weight: 600;
+}
+.card-magenta .unit-separator {
+  color: #be185d;
+}
+.card-magenta .unit-group.sub-second .digit-value {
+  color: #500724;
+}
+.theme-magenta .slider-value-badge {
+  background: #ffffff;
+  border-color: rgba(219, 39, 119, 0.5);
+  color: #831843;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(219, 39, 119, 0.12);
+}
+.theme-magenta .custom-slider::-webkit-slider-thumb {
+  border-color: #db2777;
+  box-shadow: 0 2px 8px rgba(219, 39, 119, 0.35);
+}
+.theme-magenta .slider-progress {
+  background: #ec4899;
+}
+.theme-magenta .btn-preset {
+  background: rgba(253, 238, 248, 0.88);
+  border-color: rgba(236, 72, 153, 0.40);
+  color: #831843;
+  font-weight: 500;
+}
+.theme-magenta .btn-preset:hover {
+  background: #ffffff;
+  border-color: #db2777;
+  color: #500724;
+}
+.theme-magenta .btn-preset.active {
+  background: #fce7f3;
+  border-color: #db2777;
+  color: #500724;
+  font-weight: 600;
+  box-shadow: 0 2px 10px rgba(219, 39, 119, 0.18);
+}
+.theme-magenta .scroll-prompt-btn {
+  background: rgba(253, 238, 248, 0.85);
+  border-color: rgba(219, 39, 119, 0.4);
+  color: #be185d;
+}
+
+/* 3. Light Blue Theme — Nearness */
+.theme-lightblue .top-header .meta-value {
+  color: #0369a1;
+  font-weight: 500;
+}
+.theme-lightblue .title-header {
+  color: #082f49;
+}
+.card-lightblue {
+  background: linear-gradient(145deg, rgba(240, 249, 255, 0.76) 0%, rgba(218, 240, 253, 0.65) 100%);
+  border: 1.5px solid rgba(2, 132, 199, 0.40);
+  box-shadow: 0 20px 45px -12px rgba(2, 132, 199, 0.12), 0 4px 16px rgba(56, 189, 248, 0.05);
+}
+.card-lightblue .digit-value {
+  color: #082f49;
+  font-weight: 300;
+}
+.card-lightblue .unit-label {
+  color: #0369a1;
+  font-weight: 600;
+}
+.card-lightblue .unit-separator {
+  color: #0284c7;
+}
+.card-lightblue .unit-group.sub-second .digit-value {
+  color: #0c4a6e;
+}
+.theme-lightblue .slider-value-badge {
+  background: #ffffff;
+  border-color: rgba(2, 132, 199, 0.5);
+  color: #0369a1;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.12);
+}
+.theme-lightblue .custom-slider::-webkit-slider-thumb {
+  border-color: #0284c7;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+}
+.theme-lightblue .slider-progress {
+  background: #0284c7;
+}
+.theme-lightblue .btn-preset {
+  background: rgba(240, 249, 255, 0.88);
+  border-color: rgba(56, 189, 248, 0.40);
+  color: #0369a1;
+  font-weight: 500;
+}
+.theme-lightblue .btn-preset:hover {
+  background: #ffffff;
+  border-color: #0284c7;
+  color: #0c4a6e;
+}
+.theme-lightblue .btn-preset.active {
+  background: #e0f2fe;
+  border-color: #0284c7;
+  color: #0c4a6e;
+  font-weight: 600;
+  box-shadow: 0 2px 10px rgba(2, 132, 199, 0.18);
+}
+.theme-lightblue .scroll-prompt-btn {
+  background: rgba(240, 249, 255, 0.85);
+  border-color: rgba(2, 132, 199, 0.4);
+  color: #0284c7;
+}
+

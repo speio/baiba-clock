@@ -17,17 +17,21 @@
   'use strict';
 
   // --- Constants & Config ---
-  const ORIGIN_DATE = new Date(2026, 7, 26, 0, 0, 0); // Month 7 is August (0-indexed)
-  const ARRIVAL_DATE = new Date(2026, 8, 11, 20, 36, 0); // Month 8 is September
+  const INKLING_DATE = new Date(2026, 7, 26, 0, 0, 0); // August 26, 2026 00:00:00 (First Inkling)
+  const BRUSH_DATE = new Date(2026, 8, 1, 19, 20, 0); // September 1, 2026 19:20:00 (First Brush)
+  const ARRIVAL_DATE = new Date(2026, 8, 11, 20, 36, 0); // September 11, 2026 20:36:00 (Nearness)
   const DEPARTURE_DATE = new Date(2026, 8, 11, 15, 47, 0);
   const SECONDS_PER_DAY = 86400;
   const DAYS_PER_YEAR = 365.2425;
   const SECONDS_PER_YEAR = DAYS_PER_YEAR * SECONDS_PER_DAY;
 
-  // Anchor Ratios
+  // Anchor Ratios:
+  // Objective Reality: 1.0x (alpha = 0.0)
+  // Dialated: 7.0x (alpha = 0.5)
+  // Our time: 52.0x (alpha = 1.0)
   const RATIO_REAL = 1.0;
-  const RATIO_MID = Math.sqrt(7.0); // ~2.64575
-  const RATIO_MAX = 7.0; // 1 real day = 1 subjective week
+  const RATIO_MID = 7.0;
+  const RATIO_MAX = 52.0;
 
   // State
   const state = {
@@ -41,39 +45,46 @@
     lastFramePerf: performance.now(),
   };
 
-  // Section 1 DOM Elements ("Since We Met")
-  const slider = document.getElementById('distortionSlider');
-  const sliderProgress = document.getElementById('sliderProgress');
-  const sliderBadge = document.getElementById('sliderValueBadge');
+  // Section 1 DOM Elements ("First Inkling" - Blonde)
+  const sliderInkling = document.getElementById('distortionSliderInkling');
+  const sliderProgressInkling = document.getElementById('sliderProgressInkling');
+  const sliderBadgeInkling = document.getElementById('sliderValueBadgeInkling');
+  const btnPresetRealInkling = document.getElementById('btnPresetRealInkling');
+  const btnPresetWeekInkling = document.getElementById('btnPresetWeekInkling');
+  const btnPresetOurInkling = document.getElementById('btnPresetOurInkling');
 
-  // Digit Elements (Clock 1)
-  const valYears = document.getElementById('valYears');
-  const valDays = document.getElementById('valDays');
-  const valHours = document.getElementById('valHours');
-  const valMinutes = document.getElementById('valMinutes');
-  const valSeconds = document.getElementById('valSeconds');
-  const valMillis = document.getElementById('valMillis');
-  const valMicros = document.getElementById('valMicros');
+  const valYearsInkling = document.getElementById('valYearsInkling');
+  const valDaysInkling = document.getElementById('valDaysInkling');
+  const valHoursInkling = document.getElementById('valHoursInkling');
+  const valMinutesInkling = document.getElementById('valMinutesInkling');
+  const valSecondsInkling = document.getElementById('valSecondsInkling');
+  const valMillisInkling = document.getElementById('valMillisInkling');
+  const valMicrosInkling = document.getElementById('valMicrosInkling');
 
-  // Views & Controls
-  const chronoView = document.getElementById('chronoView');
-  const binsView = document.getElementById('binsView');
-  const binsGrid = document.getElementById('binsGrid');
-  const btnToggleView = document.getElementById('btnToggleView');
-  const btnPauseResume = document.getElementById('btnPauseResume');
-  const btnTimeWarpModal = document.getElementById('btnTimeWarpModal');
-  const btnCloseWarp = document.getElementById('btnCloseWarp');
-  const warpModal = document.getElementById('warpModal');
-  const warpDaysSlider = document.getElementById('warpDaysSlider');
-  const warpDaysVal = document.getElementById('warpDaysVal');
-  const btnResetToLive = document.getElementById('btnResetToLive');
+  // Section 2 DOM Elements ("First Brush" - Magenta/Pink)
+  const sliderBrush = document.getElementById('distortionSliderBrush');
+  const sliderProgressBrush = document.getElementById('sliderProgressBrush');
+  const sliderBadgeBrush = document.getElementById('sliderValueBadgeBrush');
+  const btnPresetRealBrush = document.getElementById('btnPresetRealBrush');
+  const btnPresetWeekBrush = document.getElementById('btnPresetWeekBrush');
+  const btnPresetOurBrush = document.getElementById('btnPresetOurBrush');
 
-  // Presets
-  const btnPresetReal = document.getElementById('btnPresetReal');
-  const btnPresetWeek = document.getElementById('btnPresetWeek');
-  const btnPresetOur = document.getElementById('btnPresetOur');
+  const valYearsBrush = document.getElementById('valYearsBrush');
+  const valDaysBrush = document.getElementById('valDaysBrush');
+  const valHoursBrush = document.getElementById('valHoursBrush');
+  const valMinutesBrush = document.getElementById('valMinutesBrush');
+  const valSecondsBrush = document.getElementById('valSecondsBrush');
+  const valMillisBrush = document.getElementById('valMillisBrush');
+  const valMicrosBrush = document.getElementById('valMicrosBrush');
 
-  // Section 2 DOM Elements (Reverse Countdown: "Nearness")
+  // Section 3 DOM Elements ("Nearness" - Light Blue)
+  const sliderCountdown = document.getElementById('distortionSliderCountdown');
+  const sliderProgressCountdown = document.getElementById('sliderProgressCountdown');
+  const sliderBadgeCountdown = document.getElementById('sliderValueBadgeCountdown');
+  const btnPresetRealCountdown = document.getElementById('btnPresetRealCountdown');
+  const btnPresetWeekCountdown = document.getElementById('btnPresetWeekCountdown');
+  const btnPresetOurCountdown = document.getElementById('btnPresetOurCountdown');
+
   const countYears = document.getElementById('countYears');
   const countDays = document.getElementById('countDays');
   const countHours = document.getElementById('countHours');
@@ -84,13 +95,14 @@
   const arrivalBanner = document.getElementById('arrivalBanner');
   const countdownView = document.getElementById('countdownView');
 
-  // Section 2 Controls (Nearness Slider & Presets)
-  const sliderCountdown = document.getElementById('distortionSliderCountdown');
-  const sliderProgressCountdown = document.getElementById('sliderProgressCountdown');
-  const sliderBadgeCountdown = document.getElementById('sliderValueBadgeCountdown');
-  const btnPresetRealCountdown = document.getElementById('btnPresetRealCountdown');
-  const btnPresetWeekCountdown = document.getElementById('btnPresetWeekCountdown');
-  const btnPresetOurCountdown = document.getElementById('btnPresetOurCountdown');
+  // Global Controls & Modals
+  const btnPauseResume = document.getElementById('btnPauseResume');
+  const btnTimeWarpModal = document.getElementById('btnTimeWarpModal');
+  const btnCloseWarp = document.getElementById('btnCloseWarp');
+  const warpModal = document.getElementById('warpModal');
+  const warpDaysSlider = document.getElementById('warpDaysSlider');
+  const warpDaysVal = document.getElementById('warpDaysVal');
+  const btnResetToLive = document.getElementById('btnResetToLive');
 
   // Canvases
   const farmCanvas = document.getElementById('farmCanvas');
@@ -99,13 +111,17 @@
   const trackCtx = trainTrackCanvas ? trainTrackCanvas.getContext('2d') : null;
 
   // =========================================================================
-  // Math: Calculate Subjective Perceived Time
+  // Math: Calculate Subjective Perceived Time (1.0x -> 7.0x -> 52.0x)
   // =========================================================================
 
   function getEffectiveRatio(alpha) {
     if (alpha <= 0.0001) return 1.0;
     if (alpha >= 0.9999) return RATIO_MAX;
-    return Math.pow(RATIO_MAX, alpha);
+    if (alpha <= 0.5) {
+      return Math.pow(RATIO_MID, alpha * 2);
+    } else {
+      return RATIO_MID * Math.pow(RATIO_MAX / RATIO_MID, (alpha - 0.5) * 2);
+    }
   }
 
   function calculatePerceivedMicros(realMicros, alpha) {
@@ -217,20 +233,27 @@
     return s;
   }
 
-  function updateHeaderAndLabels(alpha, realDays, effectiveRatio) {
+  function updateHeaderAndLabels(alpha, effectiveRatio) {
     const badgeText = `${effectiveRatio.toFixed(1)}×`;
-    if (sliderBadge) sliderBadge.textContent = badgeText;
+    if (sliderBadgeInkling) sliderBadgeInkling.textContent = badgeText;
+    if (sliderBadgeBrush) sliderBadgeBrush.textContent = badgeText;
     if (sliderBadgeCountdown) sliderBadgeCountdown.textContent = badgeText;
 
-    // Presets Active State (both top and bottom cards stay in sync)
     const isReal = alpha < 0.25;
     const isWeek = alpha >= 0.25 && alpha < 0.75;
     const isOur = alpha >= 0.75;
 
-    if (btnPresetReal) btnPresetReal.classList.toggle('active', isReal);
-    if (btnPresetWeek) btnPresetWeek.classList.toggle('active', isWeek);
-    if (btnPresetOur) btnPresetOur.classList.toggle('active', isOur);
+    // Inkling Presets
+    if (btnPresetRealInkling) btnPresetRealInkling.classList.toggle('active', isReal);
+    if (btnPresetWeekInkling) btnPresetWeekInkling.classList.toggle('active', isWeek);
+    if (btnPresetOurInkling) btnPresetOurInkling.classList.toggle('active', isOur);
 
+    // Brush Presets
+    if (btnPresetRealBrush) btnPresetRealBrush.classList.toggle('active', isReal);
+    if (btnPresetWeekBrush) btnPresetWeekBrush.classList.toggle('active', isWeek);
+    if (btnPresetOurBrush) btnPresetOurBrush.classList.toggle('active', isOur);
+
+    // Nearness Presets
     if (btnPresetRealCountdown) btnPresetRealCountdown.classList.toggle('active', isReal);
     if (btnPresetWeekCountdown) btnPresetWeekCountdown.classList.toggle('active', isWeek);
     if (btnPresetOurCountdown) btnPresetOurCountdown.classList.toggle('active', isOur);
@@ -927,8 +950,8 @@
 
     trackCtx.clearRect(0, 0, w, h);
 
-    // Speed: starts fast at 1.0x (~2.2s crossing), slows down as slider moves towards 7.0x (~15.5s crossing)
-    const tripRate = 0.45 / effectiveRatio;
+    // Speed: starts fast at 1.0x (~2.2s crossing), scales gracefully up to 52x (~28s crossing)
+    const tripRate = 0.45 / Math.pow(effectiveRatio, 0.65);
 
     if (trainState.pauseTimer > 0) {
       trainState.pauseTimer -= dt;
@@ -939,11 +962,11 @@
       if (trainState.progress >= 0.96) {
         trainState.progress = 0.96;
         trainState.direction = -1;
-        trainState.pauseTimer = 0.25 + 0.03 * (effectiveRatio - 1.0); // brief turnaround at mountains
+        trainState.pauseTimer = 0.25 + 0.03 * Math.min(10, effectiveRatio - 1.0); // brief turnaround at mountains
       } else if (trainState.progress <= 0.04) {
         trainState.progress = 0.04;
         trainState.direction = 1;
-        trainState.pauseTimer = 0.25 + 0.03 * (effectiveRatio - 1.0); // brief turnaround at gondola
+        trainState.pauseTimer = 0.25 + 0.03 * Math.min(10, effectiveRatio - 1.0); // brief turnaround at gondola
       }
     }
 
@@ -1165,16 +1188,7 @@
   // Section 2: Countdown Chronometer ("Nearness")
   // =========================================================================
 
-  function updateCountdown(alpha, dt) {
-    let refNowMs;
-    if (state.simulatedDays !== null) {
-      refNowMs = ORIGIN_DATE.getTime() + (state.simulatedDays * SECONDS_PER_DAY * 1000);
-    } else if (state.isPaused) {
-      refNowMs = ORIGIN_DATE.getTime() + (state.pausedTimeMicros / 1000);
-    } else {
-      refNowMs = Date.now();
-    }
-
+  function updateCountdown(alpha, dt, refNowMs) {
     const realRemainingMs = ARRIVAL_DATE.getTime() - refNowMs;
     const effectiveRatio = getEffectiveRatio(alpha);
 
@@ -1217,46 +1231,49 @@
     const dt = (now - state.lastFramePerf) / 1000;
     state.lastFramePerf = now;
 
-    let realElapsedMicros;
-
+    let refNowMs;
     if (state.simulatedDays !== null) {
-      realElapsedMicros = state.simulatedDays * SECONDS_PER_DAY * 1e6;
+      refNowMs = INKLING_DATE.getTime() + (state.simulatedDays * SECONDS_PER_DAY * 1000);
+    } else if (state.isPaused) {
+      refNowMs = INKLING_DATE.getTime() + (state.pausedTimeMicros / 1000);
     } else {
-      if (state.isPaused) {
-        realElapsedMicros = state.pausedTimeMicros;
-      } else {
-        const liveNowMs = Date.now();
-        const originMs = ORIGIN_DATE.getTime();
-        const elapsedMs = Math.max(0, liveNowMs - originMs);
-        const subMsFraction = (performance.now() % 1);
-        realElapsedMicros = (elapsedMs + subMsFraction) * 1000;
-      }
+      refNowMs = Date.now();
     }
 
-    const realDays = realElapsedMicros / (SECONDS_PER_DAY * 1e6);
-
+    const subMsFraction = (performance.now() % 1);
     const alpha = state.sliderValue;
-    const perceivedMicros = calculatePerceivedMicros(realElapsedMicros, alpha);
-    const effectiveRatio = realElapsedMicros > 0 ? (perceivedMicros / realElapsedMicros) : 1.0;
+    const effectiveRatio = getEffectiveRatio(alpha);
 
-    const parts = decomposeMicros(perceivedMicros);
+    // 1. First Inkling (anchored to Aug 26, 2026 00:00:00)
+    const elapsedInklingMs = Math.max(0, refNowMs - INKLING_DATE.getTime());
+    const perceivedInklingMicros = (elapsedInklingMs + subMsFraction) * 1000 * effectiveRatio;
+    const partsInkling = decomposeMicros(perceivedInklingMicros);
 
-    valYears.textContent = pad(parts.years, 2);
-    valDays.textContent = pad(parts.days, 3);
-    valHours.textContent = pad(parts.hours, 2);
-    valMinutes.textContent = pad(parts.minutes, 2);
-    valSeconds.textContent = pad(parts.seconds, 2);
-    valMillis.textContent = pad(parts.millis, 3);
-    valMicros.textContent = pad(parts.micros, 3);
+    if (valYearsInkling) valYearsInkling.textContent = pad(partsInkling.years, 2);
+    if (valDaysInkling) valDaysInkling.textContent = pad(partsInkling.days, 3);
+    if (valHoursInkling) valHoursInkling.textContent = pad(partsInkling.hours, 2);
+    if (valMinutesInkling) valMinutesInkling.textContent = pad(partsInkling.minutes, 2);
+    if (valSecondsInkling) valSecondsInkling.textContent = pad(partsInkling.seconds, 2);
+    if (valMillisInkling) valMillisInkling.textContent = pad(partsInkling.millis, 3);
+    if (valMicrosInkling) valMicrosInkling.textContent = pad(partsInkling.micros, 3);
 
-    if (state.viewMode === 'bins') {
-      updateBinsGrid(perceivedMicros);
-    }
+    // 2. First Brush (anchored to Sep 1, 2026 19:20:00)
+    const elapsedBrushMs = Math.max(0, refNowMs - BRUSH_DATE.getTime());
+    const perceivedBrushMicros = (elapsedBrushMs + subMsFraction) * 1000 * effectiveRatio;
+    const partsBrush = decomposeMicros(perceivedBrushMicros);
 
-    updateHeaderAndLabels(alpha, realDays, effectiveRatio);
+    if (valYearsBrush) valYearsBrush.textContent = pad(partsBrush.years, 2);
+    if (valDaysBrush) valDaysBrush.textContent = pad(partsBrush.days, 3);
+    if (valHoursBrush) valHoursBrush.textContent = pad(partsBrush.hours, 2);
+    if (valMinutesBrush) valMinutesBrush.textContent = pad(partsBrush.minutes, 2);
+    if (valSecondsBrush) valSecondsBrush.textContent = pad(partsBrush.seconds, 2);
+    if (valMillisBrush) valMillisBrush.textContent = pad(partsBrush.millis, 3);
+    if (valMicrosBrush) valMicrosBrush.textContent = pad(partsBrush.micros, 3);
+
+    updateHeaderAndLabels(alpha, effectiveRatio);
 
     renderAtmosphere(alpha, dt);
-    updateCountdown(alpha, dt);
+    updateCountdown(alpha, dt, refNowMs);
     renderTrainTrack(alpha, dt, effectiveRatio);
 
     requestAnimationFrame(mainLoop);
@@ -1264,112 +1281,111 @@
 
   // =========================================================================
   // Event Handlers & User Interaction
+  // =========================================================================
   function setSliderValue(val) {
     const clamped = Math.max(0, Math.min(1, parseFloat(val)));
     state.sliderValue = clamped;
+    const pct = `${clamped * 100}%`;
 
-    if (slider) {
-      slider.value = clamped;
-      if (sliderProgress) sliderProgress.style.width = `${clamped * 100}%`;
+    if (sliderInkling) {
+      sliderInkling.value = clamped;
+      if (sliderProgressInkling) sliderProgressInkling.style.width = pct;
+    }
+    if (sliderBrush) {
+      sliderBrush.value = clamped;
+      if (sliderProgressBrush) sliderProgressBrush.style.width = pct;
     }
     if (sliderCountdown) {
       sliderCountdown.value = clamped;
-      if (sliderProgressCountdown) sliderProgressCountdown.style.width = `${clamped * 100}%`;
+      if (sliderProgressCountdown) sliderProgressCountdown.style.width = pct;
     }
   }
 
-  if (slider) {
-    slider.addEventListener('input', (e) => {
-      setSliderValue(e.target.value);
-    });
-  }
+  if (sliderInkling) sliderInkling.addEventListener('input', (e) => setSliderValue(e.target.value));
+  if (sliderBrush) sliderBrush.addEventListener('input', (e) => setSliderValue(e.target.value));
+  if (sliderCountdown) sliderCountdown.addEventListener('input', (e) => setSliderValue(e.target.value));
 
-  if (sliderCountdown) {
-    sliderCountdown.addEventListener('input', (e) => {
-      setSliderValue(e.target.value);
-    });
-  }
+  // Section 1 Presets (First Inkling)
+  if (btnPresetRealInkling) btnPresetRealInkling.addEventListener('click', () => setSliderValue(0));
+  if (btnPresetWeekInkling) btnPresetWeekInkling.addEventListener('click', () => setSliderValue(0.5));
+  if (btnPresetOurInkling) btnPresetOurInkling.addEventListener('click', () => setSliderValue(1.0));
 
-  // Presets (Pure Numerical Factors) - Section 1
-  if (btnPresetReal) btnPresetReal.addEventListener('click', () => setSliderValue(0));
-  if (btnPresetWeek) btnPresetWeek.addEventListener('click', () => setSliderValue(0.5));
-  if (btnPresetOur) btnPresetOur.addEventListener('click', () => setSliderValue(1.0));
+  // Section 2 Presets (First Brush)
+  if (btnPresetRealBrush) btnPresetRealBrush.addEventListener('click', () => setSliderValue(0));
+  if (btnPresetWeekBrush) btnPresetWeekBrush.addEventListener('click', () => setSliderValue(0.5));
+  if (btnPresetOurBrush) btnPresetOurBrush.addEventListener('click', () => setSliderValue(1.0));
 
-  // Presets (Pure Numerical Factors) - Section 2
+  // Section 3 Presets (Nearness)
   if (btnPresetRealCountdown) btnPresetRealCountdown.addEventListener('click', () => setSliderValue(0));
   if (btnPresetWeekCountdown) btnPresetWeekCountdown.addEventListener('click', () => setSliderValue(0.5));
   if (btnPresetOurCountdown) btnPresetOurCountdown.addEventListener('click', () => setSliderValue(1.0));
 
-  // Toggle View Mode (Chronological vs Base-10 Bins)
-  btnToggleView.addEventListener('click', () => {
-    if (state.viewMode === 'chrono') {
-      state.viewMode = 'bins';
-      chronoView.classList.add('hidden');
-      binsView.classList.remove('hidden');
-      btnToggleView.innerHTML = '<span class="btn-icon">⏱</span>';
-    } else {
-      state.viewMode = 'chrono';
-      binsView.classList.add('hidden');
-      chronoView.classList.remove('hidden');
-      btnToggleView.innerHTML = '<span class="btn-icon">❖</span>';
-    }
-  });
-
   // Pause / Resume
-  btnPauseResume.addEventListener('click', () => {
-    state.isPaused = !state.isPaused;
-    if (state.isPaused) {
-      const liveNowMs = Date.now();
-      const originMs = ORIGIN_DATE.getTime();
-      state.pausedTimeMicros = (liveNowMs - originMs) * 1000;
-      btnPauseResume.innerHTML = '<span class="btn-icon">▶</span>';
-    } else {
-      btnPauseResume.innerHTML = '<span class="btn-icon">⏸</span>';
-    }
-  });
+  if (btnPauseResume) {
+    btnPauseResume.addEventListener('click', () => {
+      state.isPaused = !state.isPaused;
+      if (state.isPaused) {
+        const liveNowMs = Date.now();
+        const originMs = INKLING_DATE.getTime();
+        state.pausedTimeMicros = (liveNowMs - originMs) * 1000;
+        btnPauseResume.innerHTML = '<span class="btn-icon">▶</span>';
+      } else {
+        btnPauseResume.innerHTML = '<span class="btn-icon">⏸</span>';
+      }
+    });
+  }
 
   // Time Warp Modal
-  btnTimeWarpModal.addEventListener('click', () => {
-    warpModal.classList.remove('hidden');
-  });
+  if (btnTimeWarpModal && warpModal) {
+    btnTimeWarpModal.addEventListener('click', () => {
+      warpModal.classList.remove('hidden');
+    });
+  }
 
-  btnCloseWarp.addEventListener('click', () => {
-    warpModal.classList.add('hidden');
-  });
+  if (btnCloseWarp && warpModal) {
+    btnCloseWarp.addEventListener('click', () => {
+      warpModal.classList.add('hidden');
+    });
+  }
 
-  warpModal.addEventListener('click', (e) => {
-    if (e.target === warpModal) warpModal.classList.add('hidden');
-  });
+  if (warpModal) {
+    warpModal.addEventListener('click', (e) => {
+      if (e.target === warpModal) warpModal.classList.add('hidden');
+    });
+  }
 
-  warpDaysSlider.addEventListener('input', (e) => {
-    const d = parseFloat(e.target.value);
-    warpDaysVal.textContent = d.toFixed(2);
-    state.simulatedDays = d;
-  });
+  if (warpDaysSlider && warpDaysVal) {
+    warpDaysSlider.addEventListener('input', (e) => {
+      const d = parseFloat(e.target.value);
+      warpDaysVal.textContent = d.toFixed(2);
+      state.simulatedDays = d;
+    });
+  }
 
   document.querySelectorAll('.warp-chip').forEach(btn => {
     btn.addEventListener('click', () => {
       const days = parseFloat(btn.dataset.days);
-      warpDaysSlider.value = days;
-      warpDaysVal.textContent = days.toFixed(2);
+      if (warpDaysSlider) warpDaysSlider.value = days;
+      if (warpDaysVal) warpDaysVal.textContent = days.toFixed(2);
       state.simulatedDays = days;
     });
   });
 
-  btnResetToLive.addEventListener('click', () => {
-    state.simulatedDays = null;
-    warpModal.classList.add('hidden');
-  });
+  if (btnResetToLive && warpModal) {
+    btnResetToLive.addEventListener('click', () => {
+      state.simulatedDays = null;
+      warpModal.classList.add('hidden');
+    });
+  }
 
   // =========================================================================
   // Initialize
   // =========================================================================
   resizeCanvases();
-  initBinsGrid();
   setSliderValue(0);
 
-  const initialDays = (Date.now() - ORIGIN_DATE.getTime()) / (SECONDS_PER_DAY * 1000);
-  if (initialDays > 0) {
+  const initialDays = (Date.now() - INKLING_DATE.getTime()) / (SECONDS_PER_DAY * 1000);
+  if (initialDays > 0 && warpDaysSlider && warpDaysVal) {
     warpDaysSlider.value = initialDays.toFixed(2);
     warpDaysVal.textContent = initialDays.toFixed(2);
   }

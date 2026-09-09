@@ -13,14 +13,14 @@
 
   <!-- Main User Interface -->
   <main class="app-container">
-    <!-- Section 1: First brush -->
-    <section id="sectionSinceWeMet" class="page-section">
+    <!-- Section 1: First Inkling (Blonde Theme) -->
+    <section id="sectionFirstInkling" class="page-section theme-blonde">
       <header class="top-header">
         <div class="header-left">
           <span class="meta-value">2026.08.26</span>
         </div>
         <div class="header-center">
-          <h1 id="clockTitle" class="title-header">FIRST BRUSH</h1>
+          <h1 id="clockTitleInkling" class="title-header">FIRST INKLING</h1>
         </div>
         <div class="header-right">
           <span class="meta-value">00:00:00</span>
@@ -28,64 +28,59 @@
       </header>
 
       <!-- Central Clock Section -->
-      <section class="clock-display-card">
+      <section class="clock-display-card card-blonde">
         <div class="glass-reflection"></div>
         
         <!-- Primary Display: Chronological Breakdown -->
-        <div id="chronoView" class="clock-view active">
-          <div class="unit-group" id="unitYears">
-            <div class="digit-value" id="valYears">00</div>
+        <div id="chronoViewInkling" class="clock-view active">
+          <div class="unit-group" id="unitYearsInkling">
+            <div class="digit-value" id="valYearsInkling">00</div>
             <div class="unit-label">YEARS</div>
           </div>
           <span class="unit-separator">:</span>
 
-          <div class="unit-group" id="unitDays">
-            <div class="digit-value" id="valDays">009</div>
+          <div class="unit-group" id="unitDaysInkling">
+            <div class="digit-value" id="valDaysInkling">014</div>
             <div class="unit-label">DAYS</div>
           </div>
           <span class="unit-separator">:</span>
 
-          <div class="unit-group" id="unitHours">
-            <div class="digit-value" id="valHours">00</div>
+          <div class="unit-group" id="unitHoursInkling">
+            <div class="digit-value" id="valHoursInkling">00</div>
             <div class="unit-label">HOURS</div>
           </div>
           <span class="unit-separator">:</span>
 
-          <div class="unit-group" id="unitMinutes">
-            <div class="digit-value" id="valMinutes">00</div>
+          <div class="unit-group" id="unitMinutesInkling">
+            <div class="digit-value" id="valMinutesInkling">00</div>
             <div class="unit-label">MINUTES</div>
           </div>
           <span class="unit-separator">:</span>
 
-          <div class="unit-group" id="unitSeconds">
-            <div class="digit-value" id="valSeconds">00</div>
+          <div class="unit-group" id="unitSecondsInkling">
+            <div class="digit-value" id="valSecondsInkling">00</div>
             <div class="unit-label">SECONDS</div>
           </div>
           <span class="unit-separator">.</span>
 
-          <div class="unit-group sub-second" id="unitMillis">
-            <div class="digit-value" id="valMillis">000</div>
+          <div class="unit-group sub-second" id="unitMillisInkling">
+            <div class="digit-value" id="valMillisInkling">000</div>
             <div class="unit-label">MS</div>
           </div>
           <span class="unit-separator sub">.</span>
 
-          <div class="unit-group sub-second" id="unitMicros">
-            <div class="digit-value" id="valMicros">000</div>
+          <div class="unit-group sub-second" id="unitMicrosInkling">
+            <div class="digit-value" id="valMicrosInkling">000</div>
             <div class="unit-label">µS</div>
           </div>
-        </div>
-
-        <!-- Secondary Display: Base-10 Decimal Bins -->
-        <div id="binsView" class="clock-view bins-view hidden">
-          <div class="bins-grid" id="binsGrid"></div>
         </div>
       </section>
 
       <!-- Minimal Dilation Slider Card -->
-      <section class="controls-card">
+      <section class="controls-card card-blonde">
         <div class="slider-header-row">
           <div class="slider-title-col">
-            <div class="slider-value-badge" id="sliderValueBadge">1.0×</div>
+            <div class="slider-value-badge" id="sliderValueBadgeInkling">1.0×</div>
           </div>
         </div>
 
@@ -93,35 +88,32 @@
         <div class="slider-track-container">
           <div class="slider-ticks">
             <span class="tick-mark left">1.0×</span>
-            <span class="tick-mark mid">2.6×</span>
-            <span class="tick-mark right">7.0×</span>
+            <span class="tick-mark mid">7.0×</span>
+            <span class="tick-mark right">52.0×</span>
           </div>
           <input 
             type="range" 
-            id="distortionSlider" 
+            id="distortionSliderInkling" 
             min="0" 
             max="1" 
             step="0.001" 
             value="0" 
             class="custom-slider"
-            aria-label="Dilation Slider"
+            aria-label="First Inkling Dilation Slider"
           >
-          <div class="slider-progress" id="sliderProgress"></div>
+          <div class="slider-progress" id="sliderProgressInkling"></div>
         </div>
 
         <!-- Preset Buttons -->
         <div class="presets-row">
-          <button class="btn-preset active" id="btnPresetReal" data-val="0">Objective Reality</button>
-          <button class="btn-preset" id="btnPresetWeek" data-val="0.5">Dialated</button>
-          <button class="btn-preset" id="btnPresetOur" data-val="1.0">Our time</button>
+          <button class="btn-preset active" id="btnPresetRealInkling" data-val="0">Objective Reality</button>
+          <button class="btn-preset" id="btnPresetWeekInkling" data-val="0.5">Dialated</button>
+          <button class="btn-preset" id="btnPresetOurInkling" data-val="1.0">Our time</button>
         </div>
 
         <!-- Minimal Action Controls -->
         <div class="actions-row">
           <div class="actions-left">
-            <button class="btn-action" id="btnToggleView" title="Toggle Grid / Chrono">
-              <span class="btn-icon">❖</span>
-            </button>
             <button class="btn-action" id="btnPauseResume" title="Pause / Resume">
               <span class="btn-icon" id="pauseIcon">⏸</span>
             </button>
@@ -134,15 +126,122 @@
 
       <!-- Scroll Prompt to Section 2 -->
       <div class="scroll-prompt-row">
-        <a href="#sectionCountdown" class="scroll-prompt-btn" aria-label="Scroll down">
+        <a href="#sectionFirstBrush" class="scroll-prompt-btn" aria-label="Scroll to First Brush">
           <span class="prompt-arrow">↓</span>
         </a>
       </div>
     </section>
 
-    <!-- Section 2: Countdown & Arrival Journey -->
-    <section id="sectionCountdown" class="page-section countdown-section">
-      <!-- Symmetrical Section 2 Header -->
+    <!-- Section 2: First Brush (Magenta/Pink Theme) -->
+    <section id="sectionFirstBrush" class="page-section theme-magenta">
+      <header class="top-header">
+        <div class="header-left">
+          <span class="meta-value">2026.09.01</span>
+        </div>
+        <div class="header-center">
+          <h2 id="clockTitleBrush" class="title-header">FIRST BRUSH</h2>
+        </div>
+        <div class="header-right">
+          <span class="meta-value">19:20:00</span>
+        </div>
+      </header>
+
+      <!-- Central Clock Section -->
+      <section class="clock-display-card card-magenta">
+        <div class="glass-reflection"></div>
+        
+        <!-- Primary Display: Chronological Breakdown -->
+        <div id="chronoViewBrush" class="clock-view active">
+          <div class="unit-group" id="unitYearsBrush">
+            <div class="digit-value" id="valYearsBrush">00</div>
+            <div class="unit-label">YEARS</div>
+          </div>
+          <span class="unit-separator">:</span>
+
+          <div class="unit-group" id="unitDaysBrush">
+            <div class="digit-value" id="valDaysBrush">007</div>
+            <div class="unit-label">DAYS</div>
+          </div>
+          <span class="unit-separator">:</span>
+
+          <div class="unit-group" id="unitHoursBrush">
+            <div class="digit-value" id="valHoursBrush">16</div>
+            <div class="unit-label">HOURS</div>
+          </div>
+          <span class="unit-separator">:</span>
+
+          <div class="unit-group" id="unitMinutesBrush">
+            <div class="digit-value" id="valMinutesBrush">00</div>
+            <div class="unit-label">MINUTES</div>
+          </div>
+          <span class="unit-separator">:</span>
+
+          <div class="unit-group" id="unitSecondsBrush">
+            <div class="digit-value" id="valSecondsBrush">00</div>
+            <div class="unit-label">SECONDS</div>
+          </div>
+          <span class="unit-separator">.</span>
+
+          <div class="unit-group sub-second" id="unitMillisBrush">
+            <div class="digit-value" id="valMillisBrush">000</div>
+            <div class="unit-label">MS</div>
+          </div>
+          <span class="unit-separator sub">.</span>
+
+          <div class="unit-group sub-second" id="unitMicrosBrush">
+            <div class="digit-value" id="valMicrosBrush">000</div>
+            <div class="unit-label">µS</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Minimal Dilation Slider Card -->
+      <section class="controls-card card-magenta">
+        <div class="slider-header-row">
+          <div class="slider-title-col">
+            <div class="slider-value-badge" id="sliderValueBadgeBrush">1.0×</div>
+          </div>
+        </div>
+
+        <!-- Main Slider -->
+        <div class="slider-track-container">
+          <div class="slider-ticks">
+            <span class="tick-mark left">1.0×</span>
+            <span class="tick-mark mid">7.0×</span>
+            <span class="tick-mark right">52.0×</span>
+          </div>
+          <input 
+            type="range" 
+            id="distortionSliderBrush" 
+            min="0" 
+            max="1" 
+            step="0.001" 
+            value="0" 
+            class="custom-slider"
+            aria-label="First Brush Dilation Slider"
+          >
+          <div class="slider-progress" id="sliderProgressBrush"></div>
+        </div>
+
+        <!-- Preset Buttons -->
+        <div class="presets-row">
+          <button class="btn-preset active" id="btnPresetRealBrush" data-val="0">Objective Reality</button>
+          <button class="btn-preset" id="btnPresetWeekBrush" data-val="0.5">Dialated</button>
+          <button class="btn-preset" id="btnPresetOurBrush" data-val="1.0">Our time</button>
+        </div>
+      </section>
+
+      <!-- Scroll Prompt to Section 3 -->
+      <div class="scroll-prompt-row">
+        <a href="#sectionCountdown" class="scroll-prompt-btn" aria-label="Scroll to Nearness">
+          <span class="prompt-arrow">↓</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- Section 3: Countdown & Arrival Journey (Light Blue Theme) -->
+    <section id="sectionCountdown" class="page-section countdown-section theme-lightblue">
+      <!-- Symmetrical Section 3 Header -->
       <header class="top-header">
         <div class="header-left">
           <span class="meta-value">2026.09.11</span>
@@ -156,7 +255,7 @@
       </header>
 
       <!-- Countdown Hero Display Card with Train Track on Top -->
-      <section class="clock-display-card countdown-card">
+      <section class="clock-display-card countdown-card card-lightblue">
         <div class="glass-reflection"></div>
 
         <!-- Train Track running back and forth between Gondola and Mountains -->
@@ -207,25 +306,25 @@
           <span class="unit-separator">:</span>
 
           <div class="unit-group" id="countDaysGroup">
-            <div class="digit-value" id="countDays">004</div>
+            <div class="digit-value" id="countDays">002</div>
             <div class="unit-label">DAYS</div>
           </div>
           <span class="unit-separator">:</span>
 
           <div class="unit-group" id="countHoursGroup">
-            <div class="digit-value" id="countHours">01</div>
+            <div class="digit-value" id="countHours">09</div>
             <div class="unit-label">HOURS</div>
           </div>
           <span class="unit-separator">:</span>
 
           <div class="unit-group" id="countMinutesGroup">
-            <div class="digit-value" id="countMinutes">37</div>
+            <div class="digit-value" id="countMinutes">17</div>
             <div class="unit-label">MINUTES</div>
           </div>
           <span class="unit-separator">:</span>
 
           <div class="unit-group" id="countSecondsGroup">
-            <div class="digit-value" id="countSeconds">22</div>
+            <div class="digit-value" id="countSeconds">00</div>
             <div class="unit-label">SECONDS</div>
           </div>
           <span class="unit-separator">.</span>
@@ -250,7 +349,7 @@
       </section>
 
       <!-- Minimal Dilation Slider Card for Nearness -->
-      <section class="controls-card">
+      <section class="controls-card card-lightblue">
         <div class="slider-header-row">
           <div class="slider-title-col">
             <div class="slider-value-badge" id="sliderValueBadgeCountdown">1.0×</div>
@@ -261,8 +360,8 @@
         <div class="slider-track-container">
           <div class="slider-ticks">
             <span class="tick-mark left">1.0×</span>
-            <span class="tick-mark mid">2.6×</span>
-            <span class="tick-mark right">7.0×</span>
+            <span class="tick-mark mid">7.0×</span>
+            <span class="tick-mark right">52.0×</span>
           </div>
           <input 
             type="range" 
@@ -287,7 +386,7 @@
 
       <!-- Scroll Back to Section 1 -->
       <div class="scroll-prompt-row back-to-top-row">
-        <a href="#sectionSinceWeMet" class="scroll-prompt-btn return-btn" aria-label="Return to top">
+        <a href="#sectionFirstInkling" class="scroll-prompt-btn return-btn" aria-label="Return to top">
           <span class="prompt-arrow">↑</span>
         </a>
       </div>
