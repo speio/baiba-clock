@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Baiba Clock</title>
-  <meta name="description" content="Relativistic chronometer anchored to August 26, 2026.">
-  <link rel="stylesheet" href="style.css?v=4.0">
+  <meta name="description" content="Relativistic chronometer anchored to August 26, 2026. Frozen in monochrome as of October 6, 2026.">
+  <link rel="stylesheet" href="style.css?v=5.0">
   <style>
     .clock-view,
     #chronoViewInkling,
@@ -33,13 +33,10 @@
   </style>
 </head>
 <body>
-  <!-- Ambient Background Canvas -->
-  <canvas id="farmCanvas"></canvas>
-
   <!-- Main User Interface -->
   <main class="app-container">
-    <!-- Section 1: First Inkling (Blonde Theme) -->
-    <section id="sectionFirstInkling" class="page-section theme-blonde">
+    <!-- Section 1: First Inkling (Frozen Monochrome) -->
+    <section id="sectionFirstInkling" class="page-section theme-monochrome">
       <header class="top-header">
         <div class="header-left">
           <span class="meta-value">2026.08.26</span>
@@ -53,11 +50,11 @@
       </header>
 
       <!-- Central Clock Section -->
-      <section class="clock-display-card card-blonde">
+      <section class="clock-display-card card-monochrome">
         <div class="glass-reflection"></div>
         
-        <!-- Primary Display: Chronological Breakdown -->
-        <div id="chronoViewInkling" class="clock-view active" style="display: flex !important; flex-direction: row !important; align-items: baseline !important; justify-content: center !important; flex-wrap: nowrap !important;">
+        <!-- Primary Display: Chronological Breakdown Frozen as of October 6, 2026 -->
+        <div id="chronoViewInkling" class="clock-view active">
           <div class="unit-group" id="unitYearsInkling">
             <div class="digit-value" id="valYearsInkling">00</div>
             <div class="unit-label">YEARS</div>
@@ -65,25 +62,25 @@
           <span class="unit-separator">:</span>
 
           <div class="unit-group" id="unitDaysInkling">
-            <div class="digit-value" id="valDaysInkling">014</div>
+            <div class="digit-value" id="valDaysInkling">041</div>
             <div class="unit-label">DAYS</div>
           </div>
           <span class="unit-separator">:</span>
 
           <div class="unit-group" id="unitHoursInkling">
-            <div class="digit-value" id="valHoursInkling">00</div>
+            <div class="digit-value" id="valHoursInkling">09</div>
             <div class="unit-label">HOURS</div>
           </div>
           <span class="unit-separator">:</span>
 
           <div class="unit-group" id="unitMinutesInkling">
-            <div class="digit-value" id="valMinutesInkling">00</div>
+            <div class="digit-value" id="valMinutesInkling">40</div>
             <div class="unit-label">MINUTES</div>
           </div>
           <span class="unit-separator">:</span>
 
           <div class="unit-group" id="unitSecondsInkling">
-            <div class="digit-value" id="valSecondsInkling">00</div>
+            <div class="digit-value" id="valSecondsInkling">08</div>
             <div class="unit-label">SECONDS</div>
           </div>
           <span class="unit-separator">.</span>
@@ -101,54 +98,6 @@
         </div>
       </section>
 
-      <!-- Minimal Dilation Slider Card -->
-      <section class="controls-card card-blonde">
-        <div class="slider-header-row">
-          <div class="slider-title-col">
-            <div class="slider-value-badge" id="sliderValueBadgeInkling">1.0×</div>
-          </div>
-        </div>
-
-        <!-- Main Slider -->
-        <div class="slider-track-container">
-          <div class="slider-ticks">
-            <span class="tick-mark left">1.0×</span>
-            <span class="tick-mark mid">7.0×</span>
-            <span class="tick-mark right">52.0×</span>
-          </div>
-          <input 
-            type="range" 
-            id="distortionSliderInkling" 
-            min="0" 
-            max="1" 
-            step="0.001" 
-            value="0" 
-            class="custom-slider"
-            aria-label="First Inkling Dilation Slider"
-          >
-          <div class="slider-progress" id="sliderProgressInkling"></div>
-        </div>
-
-        <!-- Preset Buttons -->
-        <div class="presets-row">
-          <button class="btn-preset active" id="btnPresetRealInkling" data-val="0">Objective Reality</button>
-          <button class="btn-preset" id="btnPresetWeekInkling" data-val="0.5">Dialated</button>
-          <button class="btn-preset" id="btnPresetOurInkling" data-val="1.0">Our time</button>
-        </div>
-
-        <!-- Minimal Action Controls -->
-        <div class="actions-row">
-          <div class="actions-left">
-            <button class="btn-action" id="btnPauseResume" title="Pause / Resume">
-              <span class="btn-icon" id="pauseIcon">⏸</span>
-            </button>
-            <button class="btn-action" id="btnTimeWarpModal" title="Scrub Timeline">
-              <span class="btn-icon">⏱</span>
-            </button>
-          </div>
-        </div>
-      </section>
-
       <!-- Scroll Prompt to Section 2 -->
       <div class="scroll-prompt-row">
         <a href="#sectionFirstBrush" class="scroll-prompt-btn" aria-label="Scroll to First Brush">
@@ -157,8 +106,8 @@
       </div>
     </section>
 
-    <!-- Section 2: First Brush (Magenta/Pink Theme) -->
-    <section id="sectionFirstBrush" class="page-section theme-magenta">
+    <!-- Section 2: First Brush (Frozen Monochrome) -->
+    <section id="sectionFirstBrush" class="page-section theme-monochrome">
       <header class="top-header">
         <div class="header-left">
           <span class="meta-value">2026.09.01</span>
@@ -172,11 +121,11 @@
       </header>
 
       <!-- Central Clock Section -->
-      <section class="clock-display-card card-magenta">
+      <section class="clock-display-card card-monochrome">
         <div class="glass-reflection"></div>
         
-        <!-- Primary Display: Chronological Breakdown -->
-        <div id="chronoViewBrush" class="clock-view active" style="display: flex !important; flex-direction: row !important; align-items: baseline !important; justify-content: center !important; flex-wrap: nowrap !important;">
+        <!-- Primary Display: Chronological Breakdown Frozen as of October 6, 2026 -->
+        <div id="chronoViewBrush" class="clock-view active">
           <div class="unit-group" id="unitYearsBrush">
             <div class="digit-value" id="valYearsBrush">00</div>
             <div class="unit-label">YEARS</div>
@@ -184,25 +133,25 @@
           <span class="unit-separator">:</span>
 
           <div class="unit-group" id="unitDaysBrush">
-            <div class="digit-value" id="valDaysBrush">007</div>
+            <div class="digit-value" id="valDaysBrush">034</div>
             <div class="unit-label">DAYS</div>
           </div>
           <span class="unit-separator">:</span>
 
           <div class="unit-group" id="unitHoursBrush">
-            <div class="digit-value" id="valHoursBrush">16</div>
+            <div class="digit-value" id="valHoursBrush">14</div>
             <div class="unit-label">HOURS</div>
           </div>
           <span class="unit-separator">:</span>
 
           <div class="unit-group" id="unitMinutesBrush">
-            <div class="digit-value" id="valMinutesBrush">00</div>
+            <div class="digit-value" id="valMinutesBrush">20</div>
             <div class="unit-label">MINUTES</div>
           </div>
           <span class="unit-separator">:</span>
 
           <div class="unit-group" id="unitSecondsBrush">
-            <div class="digit-value" id="valSecondsBrush">00</div>
+            <div class="digit-value" id="valSecondsBrush">08</div>
             <div class="unit-label">SECONDS</div>
           </div>
           <span class="unit-separator">.</span>
@@ -220,42 +169,6 @@
         </div>
       </section>
 
-      <!-- Minimal Dilation Slider Card -->
-      <section class="controls-card card-magenta">
-        <div class="slider-header-row">
-          <div class="slider-title-col">
-            <div class="slider-value-badge" id="sliderValueBadgeBrush">1.0×</div>
-          </div>
-        </div>
-
-        <!-- Main Slider -->
-        <div class="slider-track-container">
-          <div class="slider-ticks">
-            <span class="tick-mark left">1.0×</span>
-            <span class="tick-mark mid">7.0×</span>
-            <span class="tick-mark right">52.0×</span>
-          </div>
-          <input 
-            type="range" 
-            id="distortionSliderBrush" 
-            min="0" 
-            max="1" 
-            step="0.001" 
-            value="0" 
-            class="custom-slider"
-            aria-label="First Brush Dilation Slider"
-          >
-          <div class="slider-progress" id="sliderProgressBrush"></div>
-        </div>
-
-        <!-- Preset Buttons -->
-        <div class="presets-row">
-          <button class="btn-preset active" id="btnPresetRealBrush" data-val="0">Objective Reality</button>
-          <button class="btn-preset" id="btnPresetWeekBrush" data-val="0.5">Dialated</button>
-          <button class="btn-preset" id="btnPresetOurBrush" data-val="1.0">Our time</button>
-        </div>
-      </section>
-
       <!-- Scroll Prompt to Section 3 -->
       <div class="scroll-prompt-row">
         <a href="#sectionCountdown" class="scroll-prompt-btn" aria-label="Scroll to Nearness">
@@ -264,9 +177,8 @@
       </div>
     </section>
 
-    <!-- Section 3: Countdown & Arrival Journey (Light Blue Theme) -->
-    <section id="sectionCountdown" class="page-section countdown-section theme-lightblue">
-      <!-- Symmetrical Section 3 Header -->
+    <!-- Section 3: Countdown & Arrival Journey (Nearness - Frozen Monochrome) -->
+    <section id="sectionCountdown" class="page-section countdown-section theme-monochrome">
       <header class="top-header">
         <div class="header-left">
           <span class="meta-value">2026.09.11</span>
@@ -279,51 +191,12 @@
         </div>
       </header>
 
-      <!-- Countdown Hero Display Card with Train Track on Top -->
-      <section class="clock-display-card countdown-card card-lightblue">
+      <!-- Countdown Hero Display Card -->
+      <section class="clock-display-card card-monochrome">
         <div class="glass-reflection"></div>
 
-        <!-- Train Track running back and forth between Gondola and Mountains -->
-        <div class="train-journey-track">
-          <div class="track-endpoint endpoint-gondola" title="15:47">
-            <svg class="endpoint-svg gondola-svg" viewBox="0 0 54 36" width="46" height="30" fill="none" stroke="currentColor">
-              <!-- Venetian Gondola profile with ferro (prow) -->
-              <path d="M 4 24 C 12 24, 16 26, 27 26 C 38 26, 43 21, 50 14 C 47 26, 36 30, 22 30 C 10 30, 4 27, 4 24 Z" fill="rgba(15,23,42,0.06)" stroke="currentColor" stroke-width="1.3"/>
-              <path d="M 50 14 L 52 7 L 48 8 L 50 14" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
-              <!-- Gondolier standing with oar -->
-              <circle cx="18" cy="10.5" r="2.8" fill="currentColor"/>
-              <path d="M 18 13.3 L 17.5 21 L 20 25" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-              <path d="M 13 18 L 24 13.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-              <path d="M 12 19 L 6 32" stroke="#0284c7" stroke-width="1.3" stroke-linecap="round"/>
-              <!-- Lagoon Water Ripples -->
-              <path d="M 2 32 C 6 31, 9 33, 14 32 C 19 31, 23 33, 28 32 C 33 31, 37 33, 42 32" stroke="#38bdf8" stroke-width="1.2" stroke-linecap="round"/>
-            </svg>
-            <span class="endpoint-time">15:47</span>
-          </div>
-
-          <div class="track-canvas-container">
-            <canvas id="trainTrackCanvas"></canvas>
-          </div>
-
-          <div class="track-endpoint endpoint-mountains" title="20:36">
-            <span class="endpoint-time">20:36</span>
-            <svg class="endpoint-svg alpine-svg" viewBox="0 0 54 36" width="46" height="30" fill="none" stroke="currentColor">
-              <!-- Left Peak -->
-              <polygon points="6,31 18,13 30,31" fill="rgba(148,163,184,0.25)" stroke="currentColor" stroke-width="1.2"/>
-              <polygon points="18,13 15,18 19,18" fill="#ffffff" stroke="#94a3b8" stroke-width="0.6"/>
-              <!-- High Central Alpine Peak -->
-              <polygon points="20,31 35,7 48,31" fill="rgba(100,116,139,0.3)" stroke="currentColor" stroke-width="1.4"/>
-              <polygon points="35,7 29,15 35,14 41,16" fill="#ffffff" stroke="#94a3b8" stroke-width="0.6"/>
-              <!-- Small front foothill -->
-              <polygon points="29,31 40,19 49,31" fill="rgba(148,163,184,0.2)" stroke="currentColor" stroke-width="1"/>
-              <!-- Alpine Sun Star -->
-              <circle cx="43" cy="8" r="1.8" fill="#f59e0b"/>
-            </svg>
-          </div>
-        </div>
-
-        <!-- Identical 7-Unit Breakdown Counting Down -->
-        <div id="countdownView" class="clock-view active" style="display: flex !important; flex-direction: row !important; align-items: baseline !important; justify-content: center !important; flex-wrap: nowrap !important;">
+        <!-- 7-Unit Breakdown Frozen at Arrival -->
+        <div id="countdownView" class="clock-view active">
           <div class="unit-group" id="countYearsGroup">
             <div class="digit-value" id="countYears">00</div>
             <div class="unit-label">YEARS</div>
@@ -331,19 +204,19 @@
           <span class="unit-separator">:</span>
 
           <div class="unit-group" id="countDaysGroup">
-            <div class="digit-value" id="countDays">002</div>
+            <div class="digit-value" id="countDays">000</div>
             <div class="unit-label">DAYS</div>
           </div>
           <span class="unit-separator">:</span>
 
           <div class="unit-group" id="countHoursGroup">
-            <div class="digit-value" id="countHours">09</div>
+            <div class="digit-value" id="countHours">00</div>
             <div class="unit-label">HOURS</div>
           </div>
           <span class="unit-separator">:</span>
 
           <div class="unit-group" id="countMinutesGroup">
-            <div class="digit-value" id="countMinutes">17</div>
+            <div class="digit-value" id="countMinutes">00</div>
             <div class="unit-label">MINUTES</div>
           </div>
           <span class="unit-separator">:</span>
@@ -367,45 +240,9 @@
         </div>
 
         <!-- Arrival Celebration Banner -->
-        <div id="arrivalBanner" class="arrival-banner hidden">
+        <div id="arrivalBanner" class="arrival-banner">
           <div class="arrival-sparkle">✦ ✦ ✦</div>
           <h3 class="arrival-text">SHE HAS ARRIVED</h3>
-        </div>
-      </section>
-
-      <!-- Minimal Dilation Slider Card for Nearness -->
-      <section class="controls-card card-lightblue">
-        <div class="slider-header-row">
-          <div class="slider-title-col">
-            <div class="slider-value-badge" id="sliderValueBadgeCountdown">1.0×</div>
-          </div>
-        </div>
-
-        <!-- Main Slider -->
-        <div class="slider-track-container">
-          <div class="slider-ticks">
-            <span class="tick-mark left">1.0×</span>
-            <span class="tick-mark mid">7.0×</span>
-            <span class="tick-mark right">52.0×</span>
-          </div>
-          <input 
-            type="range" 
-            id="distortionSliderCountdown" 
-            min="0" 
-            max="1" 
-            step="0.001" 
-            value="0" 
-            class="custom-slider"
-            aria-label="Nearness Dilation Slider"
-          >
-          <div class="slider-progress" id="sliderProgressCountdown"></div>
-        </div>
-
-        <!-- Preset Buttons -->
-        <div class="presets-row">
-          <button class="btn-preset active" id="btnPresetRealCountdown" data-val="0">Objective Reality</button>
-          <button class="btn-preset" id="btnPresetWeekCountdown" data-val="0.5">Dialated</button>
-          <button class="btn-preset" id="btnPresetOurCountdown" data-val="1.0">Our time</button>
         </div>
       </section>
 
@@ -416,33 +253,8 @@
         </a>
       </div>
     </section>
-
-    <!-- Interactive Time-Warp Scrub Modal -->
-    <div id="warpModal" class="modal-overlay hidden">
-      <div class="modal-card">
-        <div class="modal-header">
-          <h3>SCRUB TIMELINE</h3>
-          <button class="modal-close" id="btnCloseWarp">✕</button>
-        </div>
-        <div class="warp-presets">
-          <button class="warp-chip" data-days="1">1d</button>
-          <button class="warp-chip" data-days="3">3d</button>
-          <button class="warp-chip" data-days="7">7d</button>
-          <button class="warp-chip" data-days="9">9d</button>
-          <button class="warp-chip" data-days="14">14d</button>
-          <button class="warp-chip" data-days="30">30d</button>
-        </div>
-        <div class="warp-slider-wrap">
-          <input type="range" id="warpDaysSlider" min="0.01" max="30" step="0.01" value="9.46" class="custom-slider">
-          <div class="warp-val-display"><strong id="warpDaysVal">9.46</strong> d</div>
-        </div>
-        <div class="modal-actions">
-          <button class="btn-action" id="btnResetToLive">Live</button>
-        </div>
-      </div>
-    </div>
   </main>
 
-  <script src="app.js?v=4.0"></script>
+  <script src="app.js?v=5.0"></script>
 </body>
 </html>
